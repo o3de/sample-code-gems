@@ -41,12 +41,8 @@ namespace ShapeExample
         m_addShapeNameSuffix = new QCheckBox(this);
         m_addShapeNameSuffix->setDisabled(true);
 
-        // Example of listening to signals using a lambda as the handler
-        // In this case, we will only enable the checkbox if the user has typed in
-        // a custom name for the entity that will be created
-        QObject::connect(m_nameInput, &QLineEdit::textChanged, [this](const QString& text) {
-            m_addShapeNameSuffix->setEnabled(!text.isEmpty());
-        });
+        // Example of listening to signals using a slot as the handler
+        QObject::connect(m_nameInput, &QLineEdit::textChanged, this, &ShapeExampleWidget::OnNameInputTextChanged);
 
         formLayout->addRow(QObject::tr("Entity name"), m_nameInput);
         formLayout->addRow(QObject::tr("Add shape name suffix"), m_addShapeNameSuffix);
@@ -81,8 +77,6 @@ namespace ShapeExample
         AZ_Assert(typeIds.size() == componentNames.size(), "Unable to find component names for all types");
 
         const int maxColumnCount = 3;
-        int row = 0, column = 0;
-
         for (int i = 0; i < componentNames.size(); ++i)
         {
             AZStd::string name = componentNames[i];
@@ -97,22 +91,15 @@ namespace ShapeExample
             QPushButton* shapeButton = new QPushButton(QIcon(iconPath), QString::fromUtf8(name.c_str()), this);
             shapeButton->setMinimumHeight(40);
 
-            // Store the type id as a property on the button so we can use it later when
-            // handling the button press
-            shapeButton->setProperty("typeId", typeId.ToString<AZStd::string>().c_str());
-
-            // Example of listening to signals using a slot as the handler
-            QObject::connect(shapeButton, &QPushButton::clicked, this, &ShapeExampleWidget::OnShapeButtonClicked);
+            // Example of listening to signals using a lambda as the handler
+            QObject::connect(shapeButton, &QPushButton::clicked, this, [this, typeId]() {
+                CreateEntityWithShapeComponent(typeId);
+            });
 
             // Place our shape button in the grid layout
+            int row = i / maxColumnCount;
+            int column = i % maxColumnCount;
             gridLayout->addWidget(shapeButton, row, column);
-
-            ++column;
-            if (column >= maxColumnCount)
-            {
-                column = 0;
-                ++row;
-            }
         }
 
         shapeButtons->setLayout(gridLayout);
@@ -121,19 +108,9 @@ namespace ShapeExample
         setLayout(mainLayout);
     }
 
-    void ShapeExampleWidget::OnShapeButtonClicked()
+    void ShapeExampleWidget::CreateEntityWithShapeComponent(const AZ::TypeId& typeId)
     {
         using namespace AzToolsFramework;
-
-        // We know the signal connected to this slot has come from one of our shape QPushButton's
-        auto shapeButton = qobject_cast<QPushButton*>(sender());
-        if (!shapeButton)
-        {
-            return;
-        }
-
-        // Retrieve the type id for the shape component we want to add to this new entity
-        AZ::TypeId typeId = AZ::Uuid(shapeButton->property("typeId").toString().toUtf8().constData());
 
         // Create a new entity
         AZ::EntityId newEntityId;
@@ -168,6 +145,13 @@ namespace ShapeExample
 
         // Add the corresponding shape component for the button we pressed to the newly created entity
         EntityCompositionRequestBus::Broadcast(&EntityCompositionRequests::AddComponentsToEntities, EntityIdList{ newEntityId }, AZ::ComponentTypeList{ typeId });
+    }
+
+    void ShapeExampleWidget::OnNameInputTextChanged(const QString& text)
+    {
+        // We will only enable the checkbox if the user has typed in
+        // a custom name for the entity that will be created
+        m_addShapeNameSuffix->setEnabled(!text.isEmpty());
     }
 }
 

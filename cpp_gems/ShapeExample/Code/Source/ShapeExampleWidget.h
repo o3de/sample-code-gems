@@ -27,10 +27,12 @@ namespace ShapeExample
         explicit ShapeExampleWidget(QWidget* parent = nullptr);
 
     private Q_SLOTS:
-        void OnShapeButtonClicked();
+        void OnNameInputTextChanged(const QString& text);
 
     private:
         QLineEdit* m_nameInput = nullptr;
         QCheckBox* m_addShapeNameSuffix = nullptr;
+
+        void CreateEntityWithShapeComponent(const AZ::TypeId& typeId);
     };
 } 
