@@ -84,7 +84,7 @@ namespace ShapeExample
 
             // Find the icon registered for this component by its type id
             AZStd::string editorIconPath;
-            AzToolsFramework::EditorRequestBus::BroadcastResult(editorIconPath, &AzToolsFramework::EditorRequestBus::Events::GetComponentEditorIcon, typeId, nullptr);
+            AzToolsFramework::EditorRequestBus::BroadcastResult(editorIconPath, &AzToolsFramework::EditorRequests::GetComponentTypeEditorIcon, typeId);
             QString iconPath = QString::fromUtf8(editorIconPath.c_str());
 
             // Create a button with the shape components name and icon
@@ -125,9 +125,9 @@ namespace ShapeExample
             if (m_addShapeNameSuffix->isChecked())
             {
                 AZStd::vector<AZStd::string> componentNames;
-                AzToolsFramework::EditorComponentAPIBus::BroadcastResult(
+                EditorComponentAPIBus::BroadcastResult(
                     componentNames,
-                    &AzToolsFramework::EditorComponentAPIRequests::FindComponentTypeNames,
+                    &EditorComponentAPIRequests::FindComponentTypeNames,
                     AZ::ComponentTypeList{ typeId }
                 );
 
@@ -144,7 +144,7 @@ namespace ShapeExample
         }
 
         // Add the corresponding shape component for the button we pressed to the newly created entity
-        EntityCompositionRequestBus::Broadcast(&EntityCompositionRequests::AddComponentsToEntities, EntityIdList{ newEntityId }, AZ::ComponentTypeList{ typeId });
+        EditorComponentAPIBus::Broadcast(&EditorComponentAPIRequests::AddComponentsOfType, newEntityId, AZ::ComponentTypeList{ typeId });
     }
 
     void ShapeExampleWidget::OnNameInputTextChanged(const QString& text)
