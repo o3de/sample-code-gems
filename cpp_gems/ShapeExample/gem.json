@@ -1,0 +1,17 @@
+{
+    "gem_name": "ShapeExample",
+    "display_name": "ShapeExample",
+    "license": "What license ShapeExample uses goes here: i.e. https://opensource.org/licenses/MIT",
+    "origin": "The primary repo for ShapeExample goes here: i.e. http://www.mydomain.com",
+    "type": "Code",
+    "summary": "Day 1 example of a custom tool in C++ that can create shapes in the Editor.",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "ShapeExample"
+    ],
+    "icon_path": "preview.png",
+    "requirements": "",
+    "restricted_name": "gems"
+}
