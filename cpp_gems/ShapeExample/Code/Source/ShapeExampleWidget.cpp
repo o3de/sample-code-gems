@@ -89,6 +89,7 @@ namespace ShapeExample
 
             // Create a button with the shape components name and icon
             QPushButton* shapeButton = new QPushButton(QIcon(iconPath), QString::fromUtf8(name.c_str()), this);
+            shapeButton->setStyleSheet("text-align: left;");
             shapeButton->setMinimumHeight(40);
 
             // Example of listening to signals using a lambda as the handler
@@ -104,6 +105,10 @@ namespace ShapeExample
 
         shapeButtons->setLayout(gridLayout);
         mainLayout->addWidget(shapeButtons);
+
+        // Add stretch at bottom of the layout to fill any expanded space larger than what is needed,
+        // so that if our tool is resized large our content will stay together
+        mainLayout->addStretch();
 
         setLayout(mainLayout);
     }

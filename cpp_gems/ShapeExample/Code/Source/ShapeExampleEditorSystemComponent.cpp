@@ -70,7 +70,7 @@ namespace ShapeExample
         options.toolbarIcon = ":/ShapeExample/toolbar_icon.svg";
 
         // Register our custom widget as a dockable tool with the Editor
-        AzToolsFramework::RegisterViewPane<ShapeExampleWidget>("ShapeExample", "Tools", options);
+        AzToolsFramework::RegisterViewPane<ShapeExampleWidget>("Shape Example (C++)", "Examples", options);
     }
 
 } // namespace ShapeExample
