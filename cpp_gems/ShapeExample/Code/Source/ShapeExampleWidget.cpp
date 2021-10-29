@@ -89,7 +89,6 @@ namespace ShapeExample
 
             // Create a button with the shape components name and icon
             QPushButton* shapeButton = new QPushButton(QIcon(iconPath), QString::fromUtf8(name.c_str()), this);
-            shapeButton->setStyleSheet("text-align: left;");
             shapeButton->setMinimumHeight(40);
 
             // Example of listening to signals using a lambda as the handler
