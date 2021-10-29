@@ -105,6 +105,10 @@ namespace ShapeExample
         shapeButtons->setLayout(gridLayout);
         mainLayout->addWidget(shapeButtons);
 
+        // Add stretch at bottom of the layout to fill any expanded space larger than what is needed,
+        // so that if our tool is resized large our content will stay together
+        mainLayout->addStretch();
+
         setLayout(mainLayout);
     }
 
