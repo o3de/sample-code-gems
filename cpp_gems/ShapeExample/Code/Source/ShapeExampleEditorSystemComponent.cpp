@@ -65,7 +65,7 @@ namespace ShapeExample
     void ShapeExampleEditorSystemComponent::NotifyRegisterViews()
     {
         AzToolsFramework::ViewPaneOptions options;
-        options.paneRect = QRect(100, 100, 500, 350);
+        options.paneRect = QRect(100, 100, 500, 500);
         options.showOnToolsToolbar = true;
         options.toolbarIcon = ":/ShapeExample/toolbar_icon.svg";
 

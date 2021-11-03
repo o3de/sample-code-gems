@@ -15,6 +15,7 @@
 #endif
 
 class QCheckBox;
+class QComboBox;
 class QLineEdit;
 
 namespace ShapeExample
@@ -32,6 +33,7 @@ namespace ShapeExample
     private:
         QLineEdit* m_nameInput = nullptr;
         QCheckBox* m_addShapeNameSuffix = nullptr;
+        QComboBox* m_scaleInput = nullptr;
 
         void CreateEntityWithShapeComponent(const AZ::TypeId& typeId);
     };

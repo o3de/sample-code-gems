@@ -6,6 +6,7 @@
  *
  */
 
+#include <AzCore/Component/TransformBus.h>
 #include <AzCore/Utils/Utils.h>
 
 #include <AzToolsFramework/API/EntityCompositionRequestBus.h>
@@ -13,9 +14,12 @@
 #include <AzToolsFramework/Entity/EditorEntityAPIBus.h>
 
 #include <QCheckBox>
+#include <QComboBox>
+#include <QDoubleValidator>
 #include <QFormLayout>
 #include <QGridLayout>
-#include <QIcon>
+#include <QGroupBox>
+#include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
 #include <QVBoxLayout>
@@ -30,16 +34,31 @@ namespace ShapeExample
         setWindowTitle(QObject::tr("ShapeExample"));
 
         QVBoxLayout* mainLayout = new QVBoxLayout(this);
+        mainLayout->setSpacing(20);
 
-        QWidget* entityNameWidget = new QWidget(this);
+        // Introduction text explaining the example
+        QLabel* introText = new QLabel(QObject::tr("Welcome to the Python Shape Example tool. This tool demonstrates an example of creating an entity with a shape component in the editor. It also has other functional samples for you to play with."), this);
+        introText->setWordWrap(true);
+        mainLayout->addWidget(introText);
+
+        // Show link to the actual tutorial for this example
+        QLabel* tutorialLink = new QLabel(QObject::tr("You can learn how to build this example on <a href=\"https://o3de.org/docs/learning-guide/tutorials/custom-tools/shape-example-cpp/\">O3DE Learn.</a>"), this);
+        tutorialLink->setTextFormat(Qt::RichText);
+        tutorialLink->setOpenExternalLinks(true);
+        mainLayout->addWidget(tutorialLink);
+
+        QGroupBox* entityNameWidget = new QGroupBox(QObject::tr("Name your entity (Line Edit)"), this);
         QFormLayout* formLayout = new QFormLayout();
 
+        // Line edit to (optionally) rename the entity that gets created
         m_nameInput = new QLineEdit(this);
-        m_nameInput->setPlaceholderText(QObject::tr("Set custom Entity name here..."));
+        m_nameInput->setPlaceholderText(QObject::tr("Optional"));
         m_nameInput->setClearButtonEnabled(true);
 
+        // Check box used to toggle appending a suffix of the shape name when renaming the entity
         m_addShapeNameSuffix = new QCheckBox(this);
         m_addShapeNameSuffix->setDisabled(true);
+        m_addShapeNameSuffix->setToolTip("e.g. Entity2_BoxShape");
 
         // Example of listening to signals using a slot as the handler
         QObject::connect(m_nameInput, &QLineEdit::textChanged, this, &ShapeExampleWidget::OnNameInputTextChanged);
@@ -50,7 +69,29 @@ namespace ShapeExample
         entityNameWidget->setLayout(formLayout);
         mainLayout->addWidget(entityNameWidget);
 
-        QWidget* shapeButtons = new QWidget(this);
+        QGroupBox* comboBoxGroup = new QGroupBox("Choose your scale (Combo Box)", this);
+        QVBoxLayout* comboBoxLayout = new QVBoxLayout();
+
+        // Combo box with preset scales to be set on the created entity
+        // The user can also manually enter a scale into the combo box,
+        // which is validated to constrain to a double value between 0 and 100 with 3 decimals allowed
+        QStringList scaleValues = {
+            "1.0",
+            "1.5",
+            "2.0",
+            "5.0",
+            "10.0"
+        };
+        m_scaleInput = new QComboBox(this);
+        m_scaleInput->setEditable(true);
+        m_scaleInput->setValidator(new QDoubleValidator(0.0, 100.0, 3, this));
+        m_scaleInput->addItems(scaleValues);
+        comboBoxLayout->addWidget(m_scaleInput);
+
+        comboBoxGroup->setLayout(comboBoxLayout);
+        mainLayout->addWidget(comboBoxGroup);
+
+        QGroupBox* shapeButtons = new QGroupBox(QObject::tr("Choose your shape (Button)"), this);
         QGridLayout* gridLayout = new QGridLayout();
 
         // We want to find every component that provides the ShapeService
@@ -82,14 +123,8 @@ namespace ShapeExample
             AZStd::string name = componentNames[i];
             AZ::TypeId typeId = typeIds[i];
 
-            // Find the icon registered for this component by its type id
-            AZStd::string editorIconPath;
-            AzToolsFramework::EditorRequestBus::BroadcastResult(editorIconPath, &AzToolsFramework::EditorRequests::GetComponentTypeEditorIcon, typeId);
-            QString iconPath = QString::fromUtf8(editorIconPath.c_str());
-
-            // Create a button with the shape components name and icon
-            QPushButton* shapeButton = new QPushButton(QIcon(iconPath), QString::fromUtf8(name.c_str()), this);
-            shapeButton->setMinimumHeight(40);
+            // Create a button with the shape components name
+            QPushButton* shapeButton = new QPushButton(QString::fromUtf8(name.c_str()), this);
 
             // Example of listening to signals using a lambda as the handler
             QObject::connect(shapeButton, &QPushButton::clicked, this, [this, typeId]() {
@@ -104,6 +139,10 @@ namespace ShapeExample
 
         shapeButtons->setLayout(gridLayout);
         mainLayout->addWidget(shapeButtons);
+
+        QLabel* warningLabel = new QLabel(QObject::tr("<i>(Make sure a level is loaded before choosing your shape)</i>"), this);
+        warningLabel->setTextFormat(Qt::RichText);
+        mainLayout->addWidget(warningLabel);
 
         // Add stretch at bottom of the layout to fill any expanded space larger than what is needed,
         // so that if our tool is resized large our content will stay together
@@ -145,6 +184,14 @@ namespace ShapeExample
 
             // Set new name on the entity we created
             EditorEntityAPIBus::Event(newEntityId, &EditorEntityAPIRequests::SetName, entityName.toUtf8().constData());
+        }
+
+        // Set the scale on our new entity
+        bool validFloat = false;
+        float scale = m_scaleInput->currentText().toFloat(&validFloat);
+        if (validFloat)
+        {
+            AZ::TransformBus::Event(newEntityId, &AZ::TransformInterface::SetLocalUniformScale, scale);
         }
 
         // Add the corresponding shape component for the button we pressed to the newly created entity
