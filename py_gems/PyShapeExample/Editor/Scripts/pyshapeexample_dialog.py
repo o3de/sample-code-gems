@@ -61,7 +61,7 @@ class PyShapeExampleDialog(QDialog):
         main_layout.setSpacing(20)
 
         # Introduction text explaining the example
-        intro_text = QLabel("Welcome to the Python Shape Example tool. This tool demonstrates an example of creating an entity with a shape component in the editor. It also has other functional samples for you to play with too.", self)
+        intro_text = QLabel("Welcome to the Python Shape Example tool. This tool demonstrates an example of creating an entity with a shape component in the editor. It also has other functional samples for you to play with.", self)
         intro_text.setWordWrap(True)
         main_layout.addWidget(intro_text)
 
@@ -135,7 +135,6 @@ class PyShapeExampleDialog(QDialog):
             shape_button = QPushButton(name, self)
 
             # Example of listening to signals using a lambda as the handler
-            #shape_button.clicked.connect(lambda type_id: self.create_entity_with_shape_component(type_id))
             shape_button.clicked.connect(lambda checked=False, type_id=type_id: self.create_entity_with_shape_component(type_id))
 
             # Place our shape button in the grid layout
