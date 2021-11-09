@@ -37,7 +37,7 @@ namespace ShapeExample
         mainLayout->setSpacing(20);
 
         // Introduction text explaining the example
-        QLabel* introText = new QLabel(QObject::tr("Welcome to the Python Shape Example tool. This tool demonstrates an example of creating an entity with a shape component in the editor. It also has other functional samples for you to play with."), this);
+        QLabel* introText = new QLabel(QObject::tr("Welcome to the C++ Shape Example tool. This tool demonstrates an example of creating an entity with a shape component in the editor. It also has other functional samples for you to play with."), this);
         introText->setWordWrap(true);
         mainLayout->addWidget(introText);
 
