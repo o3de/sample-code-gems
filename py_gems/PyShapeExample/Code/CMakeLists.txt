@@ -46,6 +46,8 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         BUILD_DEPENDENCIES
             PUBLIC
                 Gem::PyShapeExample.Editor.Static
+        RUNTIME_DEPENDENCIES
+            Gem::QtForPython.Editor
     )
 
     # By default, we will specify that the above target PyShapeExample would be used by

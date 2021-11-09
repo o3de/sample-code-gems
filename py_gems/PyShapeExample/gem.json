@@ -4,7 +4,7 @@
     "license": "What license PyShapeExample uses goes here: i.e. https://opensource.org/licenses/MIT",
     "origin": "The primary repo for PyShapeExample goes here: i.e. http://www.mydomain.com",
     "type": "Code",
-    "summary": "A short description of PyShapeExample.",
+    "summary": "Day 1 example of a custom tool in Python that can create shapes in the Editor.",
     "canonical_tags": [
         "Gem"
     ],
@@ -13,5 +13,8 @@
     ],
     "icon_path": "preview.png",
     "requirements": "",
-    "restricted_name": "PyShapeExample"
+    "restricted_name": "PyShapeExample",
+    "dependencies": [
+        "QtForPython"
+    ]
 }
