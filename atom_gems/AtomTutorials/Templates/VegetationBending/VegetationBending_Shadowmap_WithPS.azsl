@@ -1,0 +1,27 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+ 
+#define SHADOWMAP 1 
+#define ENABLE_ALPHA_CLIP 1
+
+#include <scenesrg.srgi>
+#include "VegetationBending_Common.azsli"
+#include <Atom/Features/PBR/DefaultObjectSrg.azsli>
+
+#include "Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/AlphaInput.azsli"
+#include "Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/ParallaxInput.azsli"
+
+#include "Atom/Feature/Common/Assets/Materials/Types/MaterialFunctions/StandardGetObjectToWorld.azsli"
+#include "Atom/Feature/Common/Assets/Materials/Types/MaterialFunctions/StandardGetNormalToWorld.azsli"
+#include "Atom/Feature/Common/Assets/Materials/Types/MaterialFunctions/StandardGetAlphaAndClip.azsli"
+#include "Atom/Feature/Common/Assets/Materials/Types/MaterialFunctions/StandardTransformUvs.azsli"
+#include "Atom/Feature/Common/Assets/Materials/Types/MaterialFunctions/EvaluateTangentFrame.azsli"
+#include "Atom/Feature/Common/Assets/Materials/Types/MaterialFunctions/ParallaxDepth.azsli"
+
+#include "Atom/Feature/Common/Assets/Materials/Types/DepthPass_WithPS.azsli"
+#include "VegetationBending_DepthPass_WithPS.azsli"
