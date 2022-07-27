@@ -23,13 +23,11 @@ namespace AtomTutorials
 
     void AtomTutorialsEditorSystemComponent::GetProvidedServices(AZ::ComponentDescriptor::DependencyArrayType& provided)
     {
-        BaseSystemComponent::GetProvidedServices(provided);
         provided.push_back(AZ_CRC_CE("AtomTutorialsEditorService"));
     }
 
     void AtomTutorialsEditorSystemComponent::GetIncompatibleServices(AZ::ComponentDescriptor::DependencyArrayType& incompatible)
     {
-        BaseSystemComponent::GetIncompatibleServices(incompatible);
         incompatible.push_back(AZ_CRC_CE("AtomTutorialsEditorService"));
     }
 

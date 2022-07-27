@@ -9,7 +9,7 @@ namespace AtomTutorials
     class AtomTutorialsRequests
     {
     public:
-        AZ_RTTI(AtomTutorialsRequests, "{802636CF-89EA-42DD-9E24-E3884C1EF9CA}");
+        AZ_RTTI(AtomTutorialsRequests, "{1AC8C7D5-4D5D-40CC-9877-C04099C9BFB1}");
         virtual ~AtomTutorialsRequests() = default;
         // Put your public methods here
     };

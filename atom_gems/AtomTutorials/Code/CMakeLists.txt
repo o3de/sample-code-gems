@@ -25,6 +25,7 @@ ly_add_target(
     BUILD_DEPENDENCIES
         INTERFACE
            AZ::AzCore
+           Gem::Atom_Feature_Common.Public
 )
 
 # The AtomTutorials.Private.Object target is an internal target
@@ -45,6 +46,13 @@ ly_add_target(
         PUBLIC
             AZ::AzCore
             AZ::AzFramework
+            AZ::AzToolsFramework
+            Gem::AtomTutorials.API
+            Gem::LmbrCentral.Static
+            Gem::GradientSignal.Static
+            Gem::SurfaceData.Static
+            Gem::Atom_Feature_Common.Static
+            Gem::Atom_Bootstrap.Headers
 )
 
 # Here add AtomTutorials target, it depends on the Private Object library and Public API interface
@@ -64,6 +72,9 @@ ly_add_target(
             Gem::AtomTutorials.API
         PRIVATE
             Gem::AtomTutorials.Private.Object
+    RUNTIME_DEPENDENCIES
+        Gem::Atom_RPI.Private
+        Gem::Atom_Feature_Common
 )
 
 # By default, we will specify that the above target AtomTutorials would be used by
@@ -78,20 +89,6 @@ ly_create_alias(NAME AtomTutorials.Servers.API NAMESPACE Gem TARGETS Gem::AtomTu
 
 # If we are on a host platform, we want to add the host tools targets like the AtomTutorials.Editor MODULE target
 if(PAL_TRAIT_BUILD_HOST_TOOLS)
-    # The AtomTutorials.Editor.API target can be used by other gems that want to interact with the AtomTutorials.Editor module
-    ly_add_target(
-        NAME AtomTutorials.Editor.API INTERFACE
-        NAMESPACE Gem
-        FILES_CMAKE
-            atomtutorials_editor_api_files.cmake
-            ${pal_dir}/atomtutorials_editor_api_files.cmake
-        INCLUDE_DIRECTORIES
-            INTERFACE
-                Include
-        BUILD_DEPENDENCIES
-            INTERFACE
-                AZ::AzToolsFramework
-    )
 
     # The AtomTutorials.Editor.Private.Object target is an internal target
     # which is only to be used by this gems CMakeLists.txt and any subdirectories
@@ -109,10 +106,21 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
             PRIVATE
                 Include
                 Source
+        COMPILE_DEFINITIONS
+            PRIVATE
+                ATOMTUTORIALS_EDITOR
         BUILD_DEPENDENCIES
             PUBLIC
                 AZ::AzToolsFramework
-                $<TARGET_OBJECTS:Gem::AtomTutorials.Private.Object>
+                Gem::AtomTutorials.Private.Object
+                Gem::Atom_RPI.Edit
+                Gem::AtomToolsFramework.Static
+                Gem::AtomToolsFramework.Editor
+                AZ::SceneCore
+                AZ::SceneData
+                Legacy::Editor.Headers
+                Legacy::EditorCommon
+                Legacy::CryCommon
     )
 
     ly_add_target(
@@ -120,28 +128,40 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAMESPACE Gem
         AUTOMOC
         FILES_CMAKE
-            atomtutorials_editor_shared_files.cmake
+            atomtutorials_shared_files.cmake
         INCLUDE_DIRECTORIES
             PRIVATE
                 Source
             PUBLIC
                 Include
+        COMPILE_DEFINITIONS
+            PRIVATE
+                ATOMTUTORIALS_EDITOR
         BUILD_DEPENDENCIES
-            PUBLIC
-                Gem::AtomTutorials.Editor.API
             PRIVATE
                 Gem::AtomTutorials.Editor.Private.Object
+        RUNTIME_DEPENDENCIES
+            Gem::Atom_RPI.Editor
+            Gem::Atom_Feature_Common.Editor
+            Gem::AtomToolsFramework.Editor
+            Legacy::EditorCommon
     )
 
     # By default, we will specify that the above target AtomTutorials would be used by
     # Tool and Builder type targets when this gem is enabled.  If you don't want it
     # active in Tools or Builders by default, delete one of both of the following lines:
-    ly_create_alias(NAME AtomTutorials.Tools    NAMESPACE Gem TARGETS Gem::AtomTutorials.Editor)
-    ly_create_alias(NAME AtomTutorials.Builders NAMESPACE Gem TARGETS Gem::AtomTutorials.Editor)
-
-    # For the Tools and Builders variants of AtomTutorials Gem, an alias to the AtomTutorials.Editor API target will be made
-    ly_create_alias(NAME AtomTutorials.Tools.API NAMESPACE Gem TARGETS Gem::AtomTutorials.Editor.API)
-    ly_create_alias(NAME AtomTutorials.Builders.API NAMESPACE Gem TARGETS Gem::AtomTutorials.Editor.API)
+    ly_create_alias(NAME AtomTutorials.Tools    NAMESPACE Gem
+        TARGETS
+            Gem::AtomTutorials.Editor 
+            Gem::Atom_Feature_Common.Builders
+            Gem::Atom_RPI.Builders
+            Gem::GradientSignal.Builders
+    )
+    ly_create_alias(NAME AtomTutorials.Builders NAMESPACE Gem 
+        TARGETS
+            Gem::AtomTutorials.Editor
+            Gem::GradientSignal.Tools
+    )
 
 endif()
 

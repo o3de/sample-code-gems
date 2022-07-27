@@ -16,6 +16,14 @@
     "icon_path": "preview.png",
     "requirements": "This requires the Atom gem.",
     "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/rendering/atom/atom/",
-    "dependencies": [],
+    "dependencies": [
+        "Atom_Feature_Common",
+        "LmbrCentral",
+        "GradientSignal",
+        "SurfaceData",
+        "Atom_Bootstrap",
+        "Atom_RPI",
+        "AtomToolsFramework"
+    ],
     "restricted": "AtomTutorials"
 }
