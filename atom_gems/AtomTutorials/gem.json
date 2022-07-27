@@ -6,7 +6,7 @@
     "origin": "Open 3D Engine - o3de.org",
     "origin_url": "https://github.com/o3de/sample-code-gems",
     "type": "Code",
-    "summary": "The AtomTutorials Gem provides the final results for the vegetation bending Atom tutorial.",
+    "summary": "The AtomTutorials Gem provides the final results for the Atom tutorials.",
     "canonical_tags": [
         "Gem"
     ],
@@ -14,8 +14,8 @@
         "AtomTutorials"
     ],
     "icon_path": "preview.png",
-    "requirements": "This requires the Atom gem.",
-    "documentation_url": "https://o3de.org/docs/user-guide/gems/reference/rendering/atom/atom/",
+    "requirements": "This requires the Atom/Feature/Common gem.",
+    "documentation_url": "https://o3de.org/docs/learning-guide/tutorials/rendering/",
     "dependencies": [],
     "restricted": "AtomTutorials"
 }

@@ -7,18 +7,12 @@
 #            <restricted_folder>/<platform_name>/Gems/AtomTutorials/Code
 o3de_pal_dir(pal_dir ${CMAKE_CURRENT_LIST_DIR}/Platform/${PAL_PLATFORM_NAME} "${gem_restricted_path}" "${gem_path}" "${gem_parent_relative_path}")
 
-# Now that we have the platform abstraction layer (PAL) folder for this folder, thats where we will find the
-# traits for this platform. Traits for a platform are defines for things like whether or not something in this gem
-# is supported by this platform.
-include(${pal_dir}/PAL_${PAL_PLATFORM_NAME_LOWERCASE}.cmake)
-
 # The AtomTutorials.API target declares the common interface that users of this gem should depend on in their targets
 ly_add_target(
     NAME AtomTutorials.API INTERFACE
     NAMESPACE Gem
     FILES_CMAKE
         atomtutorials_api_files.cmake
-        ${pal_dir}/atomtutorials_api_files.cmake
     INCLUDE_DIRECTORIES
         INTERFACE
             Include
@@ -34,7 +28,6 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         atomtutorials_private_files.cmake
-        ${pal_dir}/atomtutorials_private_files.cmake
     TARGET_PROPERTIES
         O3DE_PRIVATE_TARGET TRUE
     INCLUDE_DIRECTORIES
@@ -53,7 +46,6 @@ ly_add_target(
     NAMESPACE Gem
     FILES_CMAKE
         atomtutorials_shared_files.cmake
-        ${pal_dir}/atomtutorials_shared_files.cmake
     INCLUDE_DIRECTORIES
         PUBLIC
             Include
@@ -84,7 +76,6 @@ if(PAL_TRAIT_BUILD_HOST_TOOLS)
         NAMESPACE Gem
         FILES_CMAKE
             atomtutorials_editor_api_files.cmake
-            ${pal_dir}/atomtutorials_editor_api_files.cmake
         INCLUDE_DIRECTORIES
             INTERFACE
                 Include
@@ -150,14 +141,37 @@ endif()
 ################################################################################
 # See if globally, tests are supported
 if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
-    # We globally support tests, see if we support tests on this platform for AtomTutorials.Tests
-    if(PAL_TRAIT_ATOMTUTORIALS_TEST_SUPPORTED)
-        # We support AtomTutorials.Tests on this platform, add dependency on the Private Object target
+    # We support AtomTutorials.Tests on this platform, add dependency on the Private Object target
+    ly_add_target(
+        NAME AtomTutorials.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+        NAMESPACE Gem
+        FILES_CMAKE
+            atomtutorials_tests_files.cmake
+        INCLUDE_DIRECTORIES
+            PRIVATE
+                Tests
+                Source
+        BUILD_DEPENDENCIES
+            PRIVATE
+                AZ::AzTest
+                AZ::AzFramework
+                Gem::AtomTutorials.Private.Object
+    )
+
+    # Add AtomTutorials.Tests to googletest
+    ly_add_googletest(
+        NAME Gem::AtomTutorials.Tests
+    )
+
+    # If we are a host platform we want to add tools test like editor tests here
+    if(PAL_TRAIT_BUILD_HOST_TOOLS)
+        # We support AtomTutorials.Editor.Tests on this platform, add AtomTutorials.Editor.Tests target which depends on
+        # private AtomTutorials.Editor.Private.Object target
         ly_add_target(
-            NAME AtomTutorials.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
+            NAME AtomTutorials.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
             NAMESPACE Gem
             FILES_CMAKE
-                atomtutorials_tests_files.cmake
+                atomtutorials_editor_tests_files.cmake
             INCLUDE_DIRECTORIES
                 PRIVATE
                     Tests
@@ -165,41 +179,12 @@ if(PAL_TRAIT_BUILD_TESTS_SUPPORTED)
             BUILD_DEPENDENCIES
                 PRIVATE
                     AZ::AzTest
-                    AZ::AzFramework
                     Gem::AtomTutorials.Private.Object
         )
 
-        # Add AtomTutorials.Tests to googletest
+        # Add AtomTutorials.Editor.Tests to googletest
         ly_add_googletest(
-            NAME Gem::AtomTutorials.Tests
+            NAME Gem::AtomTutorials.Editor.Tests
         )
-    endif()
-
-    # If we are a host platform we want to add tools test like editor tests here
-    if(PAL_TRAIT_BUILD_HOST_TOOLS)
-        # We are a host platform, see if Editor tests are supported on this platform
-        if(PAL_TRAIT_ATOMTUTORIALS_EDITOR_TEST_SUPPORTED)
-            # We support AtomTutorials.Editor.Tests on this platform, add AtomTutorials.Editor.Tests target which depends on
-            # private AtomTutorials.Editor.Private.Object target
-            ly_add_target(
-                NAME AtomTutorials.Editor.Tests ${PAL_TRAIT_TEST_TARGET_TYPE}
-                NAMESPACE Gem
-                FILES_CMAKE
-                    atomtutorials_editor_tests_files.cmake
-                INCLUDE_DIRECTORIES
-                    PRIVATE
-                        Tests
-                        Source
-                BUILD_DEPENDENCIES
-                    PRIVATE
-                        AZ::AzTest
-                        Gem::AtomTutorials.Private.Object
-            )
-
-            # Add AtomTutorials.Editor.Tests to googletest
-            ly_add_googletest(
-                NAME Gem::AtomTutorials.Editor.Tests
-            )
-        endif()
     endif()
 endif()

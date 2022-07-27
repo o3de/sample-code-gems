@@ -44,39 +44,15 @@ namespace AtomTutorials
     {
     }
 
-    AtomTutorialsSystemComponent::AtomTutorialsSystemComponent()
-    {
-        if (AtomTutorialsInterface::Get() == nullptr)
-        {
-            AtomTutorialsInterface::Register(this);
-        }
-    }
-
-    AtomTutorialsSystemComponent::~AtomTutorialsSystemComponent()
-    {
-        if (AtomTutorialsInterface::Get() == this)
-        {
-            AtomTutorialsInterface::Unregister(this);
-        }
-    }
-
     void AtomTutorialsSystemComponent::Init()
     {
     }
 
     void AtomTutorialsSystemComponent::Activate()
     {
-        AtomTutorialsRequestBus::Handler::BusConnect();
-        AZ::TickBus::Handler::BusConnect();
     }
 
     void AtomTutorialsSystemComponent::Deactivate()
-    {
-        AZ::TickBus::Handler::BusDisconnect();
-        AtomTutorialsRequestBus::Handler::BusDisconnect();
-    }
-
-    void AtomTutorialsSystemComponent::OnTick([[maybe_unused]] float deltaTime, [[maybe_unused]] AZ::ScriptTimePoint time)
     {
     }
 
