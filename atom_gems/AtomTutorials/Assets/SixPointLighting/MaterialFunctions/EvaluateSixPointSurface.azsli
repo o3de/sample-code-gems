@@ -1,0 +1,65 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <../SixPointSurface.azsli>
+#include <Atom/Features/MatrixUtility.azsli>
+
+void EvaluateSixPointSurface(
+    float3 vertexNormal,
+    float2 uv[UvSetCount],
+    float3 tangents[UvSetCount],
+    float3 bitangents[UvSetCount],
+    bool isFrontFace,
+    bool displacementIsClipped,
+    inout Surface surface)
+{
+    // ------- Base Color -------
+    float2 baseColorUv = uv[MaterialSrg::m_baseColorMapUvIndex];
+    float2 sixPointUv = GetUvForCurrentFrame(baseColorUv);
+    float3 sampledColor = GetBaseColorInput(MaterialSrg::m_baseColorMap, MaterialSrg::m_sampler, sixPointUv, MaterialSrg::m_baseColor.rgb, o_baseColor_useTexture);
+    float3 baseColor = BlendBaseColor(sampledColor, MaterialSrg::m_baseColor.rgb, MaterialSrg::m_baseColorFactor, o_baseColorTextureBlendMode, o_baseColor_useTexture);
+    
+    // ------- Metallic -------
+    float metallic = MaterialSrg::m_metallicFactor;
+
+    // ------- Specular -------
+    float specularF0Factor = MaterialSrg::m_specularF0Factor;
+    surface.SetAlbedoAndSpecularF0(baseColor, specularF0Factor, metallic);
+    
+    if(o_sixPointTexturePackMode == SixPointTexturePackMode::TpLftRtBt_FrBck)
+    {
+        float4 topLeftRightBottom = MaterialSrg::m_topLeftRightBottomMap.Sample(MaterialSrg::m_sampler, sixPointUv);
+        float4 frontBack = MaterialSrg::m_frontBackMap.Sample(MaterialSrg::m_sampler, sixPointUv);
+        surface.top = topLeftRightBottom.r;
+        surface.left = topLeftRightBottom.g;
+        surface.right = topLeftRightBottom.b;
+        surface.bottom = topLeftRightBottom.a;
+        surface.frontside = frontBack.r;
+        surface.backside = frontBack.g;
+    }
+    else
+    {
+        float4 rightLeftTop = MaterialSrg::m_rightLeftTopMap.Sample(MaterialSrg::m_sampler, sixPointUv);
+        float4 bottomBackFront = MaterialSrg::m_bottomBackFrontMap.Sample(MaterialSrg::m_sampler, sixPointUv);
+        surface.right = rightLeftTop.r;
+        surface.left = rightLeftTop.g;
+        surface.top = rightLeftTop.b;
+        surface.bottom = bottomBackFront.r;
+        surface.backside = bottomBackFront.g;
+        surface.frontside = bottomBackFront.b;
+    }
+    surface.tangent = tangents[0];
+    surface.bitangent = bitangents[0];
+
+    // ------- Roughness -------
+    surface.roughnessLinear = MaterialSrg::m_roughnessFactor;;
+    surface.CalculateRoughnessA();
+
+    // ------- Clearcoat -------
+    surface.clearCoat.InitializeToZero();
+} 
