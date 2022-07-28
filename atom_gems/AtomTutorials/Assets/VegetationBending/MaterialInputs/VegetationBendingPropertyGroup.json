@@ -1,0 +1,98 @@
+{
+  "name": "vegetationBending",
+  "displayName": "Vegetation Bending",
+  "description": "Properties for configuring the bending.",
+  "properties": [
+    {
+      "name": "DetailBendingFrequency",
+      "displayName": "Detail bending frequency",
+      "description": "Detail bending frequency.",
+      "type": "Float",
+      "defaultValue": 0.0,
+      "min": 0.0,
+      "max": 1.0,
+      "connection": {
+        "type": "ShaderInput",
+        "name": "m_detailFrequency"
+      }
+    },
+    {
+      "name": "DetailBendingLeafAmplitude",
+      "displayName": "Detail bending leaf amplitude",
+      "description": "Detail bending leaf amplitude.",
+      "type": "Float",
+      "defaultValue": 0.0,
+      "min": 0.0,
+      "max": 1.0,
+      "connection": {
+        "type": "ShaderInput",
+        "name": "m_detailLeafAmplitude"
+      }
+    },
+    {
+      "name": "DetailBendingBranchAmplitude",
+      "displayName": "Detail branch amplitude",
+      "description": "Detail branch amplitude.",
+      "type": "Float",
+      "defaultValue": 0.0,
+      "min": 0.0,
+      "max": 1.0,
+      "connection": {
+        "type": "ShaderInput",
+        "name": "m_detailBranchAmplitude"
+      }
+    },
+    {
+      "name": "WindX",
+      "displayName": "Wind direction x",
+      "description": "Wind in the x direction. This would typically come from a wind system instead of a material property, but is here as a proof of concept.",
+      "type": "Float",
+      "defaultValue": 0.0,
+      "min": -1.0,
+      "max": 1.0,
+      "connection": {
+        "type": "ShaderInput",
+        "name": "m_windX"
+      }
+    },
+    {
+      "name": "WindY",
+      "displayName": "Wind direction y",
+      "description": "Wind in the y direction. This would typically come from a wind system instead of a material property, but is here as a proof of concept.",
+      "type": "Float",
+      "defaultValue": 0.0,
+      "min": -1.0,
+      "max": 1.0,
+      "connection": {
+        "type": "ShaderInput",
+        "name": "m_windY"
+      }
+    },
+    {
+      "name": "WindBendingStrength",
+      "displayName": "Bending strength",
+      "description": "Bending strength. This would typically come from a wind system instead of a material property, but is here as a proof of concept.",
+      "type": "Float",
+      "defaultValue": 0.0,
+      "min": 0.0,
+      "max": 7.0,
+      "connection": {
+        "type": "ShaderInput",
+        "name": "m_bendingStrength"
+      }
+    },
+    {
+      "name": "WindBendingFrequency",
+      "displayName": "Wind Bending Frequency",
+      "description": "The frequency that the object sways back and forth caused by the wind. This would typically come from a wind system instead of a material property, but is here as a proof of concept.",
+      "type": "Float",
+      "defaultValue": 0.0,
+      "min": 0.0,
+      "max": 1.5,
+      "connection": {
+        "type": "ShaderInput",
+        "name": "m_windBendingFrequency"
+      }
+    }
+  ]
+}

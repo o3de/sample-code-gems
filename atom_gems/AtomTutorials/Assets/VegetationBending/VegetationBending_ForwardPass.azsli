@@ -1,0 +1,51 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+// ---------- Vertex Shader ----------
+
+struct VegetationVSInput
+{
+    // Base fields (required by the template azsli file)...
+    float3 m_position : POSITION;
+    float3 m_normal : NORMAL;
+    float4 m_tangent : TANGENT; 
+    float3 m_bitangent : BITANGENT; 
+    float4 m_optional_color : COLOR0;
+ 
+    // Extended fields (only referenced in this azsl file)...
+    float2 m_uv0 : UV0;
+    float2 m_uv1 : UV1;
+};
+
+
+#include <Atom/Features/Vertex/VertexHelper.azsli>
+
+VSOutput VegetationBending_ForwardPassVS(VegetationVSInput IN)
+{
+    VSOutput OUT;
+
+    float4x4 objectToWorld = GetObjectToWorld();
+    float4 worldPosition = mul(objectToWorld, float4(IN.m_position, 1.0));
+
+    float2 uvs[UvSetCount] = { IN.m_uv0, IN.m_uv1 };
+    TransformUvs(uvs, OUT.m_uv);
+
+    // Shadow coords will be calculated in the pixel shader in this case
+    bool skipShadowCoords = ShouldHandleParallax() && o_parallax_enablePixelDepthOffset;
+
+    float3x3 objectToWorldIT = GetNormalToWorld();
+    ConstructTBN(IN.m_normal, IN.m_tangent, IN.m_bitangent, objectToWorld, objectToWorldIT, OUT.m_normal, OUT.m_tangent, OUT.m_bitangent);
+
+    float currentTime = SceneSrg::m_time;
+    worldPosition = ProcessBending(currentTime, IN.m_position, IN.m_normal, IN.m_optional_color, worldPosition, objectToWorld);
+
+    OUT.m_worldPosition = worldPosition.xyz;
+    OUT.m_position = mul(ViewSrg::m_viewProjectionMatrix, worldPosition);
+
+    return OUT;
+}

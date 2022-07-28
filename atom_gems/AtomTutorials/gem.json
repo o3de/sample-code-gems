@@ -1,0 +1,21 @@
+{
+    "gem_name": "AtomTutorials",
+    "display_name": "AtomTutorials",
+    "license": "Apache-2.0 or MIT",
+    "license_url": "https://github.com/o3de/sample-code-gems/blob/main/LICENSE.txt",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/sample-code-gems",
+    "type": "Code",
+    "summary": "The AtomTutorials Gem provides the final results for the Atom tutorials.",
+    "canonical_tags": [
+        "Gem"
+    ],
+    "user_tags": [
+        "AtomTutorials"
+    ],
+    "icon_path": "preview.png",
+    "requirements": "This requires the Atom/Feature/Common gem.",
+    "documentation_url": "https://o3de.org/docs/learning-guide/tutorials/rendering/",
+    "dependencies": [],
+    "restricted": "AtomTutorials"
+}

@@ -1,0 +1,94 @@
+{
+  "description": "Material Type like StandardPBR, but does bending for vegetation.",
+  "version": 1,
+  "propertyLayout": {
+    "propertyGroups": [
+      {
+        "$import": "MaterialInputs/VegetationBendingPropertyGroup.json"
+      },
+      // Currently we cannot import property groups across gems, so we are hard coding the full path, even though it is not portable, as a proof of concept. 
+      // There is a GHI to enable importing across gems at https://github.com/o3de/o3de/issues/10623.
+      {
+        "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/BaseColorPropertyGroup.json"
+      },
+      {
+        "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/MetallicPropertyGroup.json"
+      },
+      {
+        "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/RoughnessPropertyGroup.json"
+      },
+      {
+        "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/SpecularPropertyGroup.json"
+      },
+      {
+        "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/NormalPropertyGroup.json"
+      },
+      {
+        "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/OcclusionPropertyGroup.json"
+      },
+      {
+        "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/EmissivePropertyGroup.json"
+      },
+      {
+        "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/ClearCoatPropertyGroup.json"
+      },
+      {
+        "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/ParallaxPropertyGroup.json"
+      },
+      {
+        "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/OpacityPropertyGroup.json"
+      },
+      {
+        "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/UvPropertyGroup.json"
+      },
+      {
+        "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/IrradiancePropertyGroup.json"
+      },
+      {
+        "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/GeneralCommonPropertyGroup.json"
+      }
+    ]
+  },
+  "shaders": [
+    {
+      "file": "./VegetationBending_ForwardPass.shader",
+      "tag": "ForwardPass"
+    },
+    {
+      "file": "./VegetationBending_ForwardPass_EDS.shader",
+      "tag": "ForwardPass_EDS"
+    },
+    {
+      "file": "Shaders/Shadow/Shadowmap.shader",
+      "tag": "Shadowmap"
+    },
+    {
+      "file": "./VegetationBending_Shadowmap_WithPS.shader",
+      "tag": "Shadowmap_WithPS"
+    },
+    {
+      "file": "./VegetationBending_DepthPass.shader",
+      "tag": "DepthPass"
+    },
+    {
+      "file": "./VegetationBending_DepthPass_WithPS.shader",
+      "tag": "DepthPass_WithPS"
+    },
+    {
+      "file": "./MeshMotionVectorVegetationBending.shader",
+      "tag": "MeshMotionVector"
+    }
+  ],
+  "functors": [
+      {
+        "type": "Lua",
+        "args": {
+          "file": "VegetationBending_ShaderEnable.lua"
+        }
+      }
+  ],
+  "uvNameMap": {
+    "UV0": "Tiled",
+    "UV1": "Unwrapped"
+  }
+}

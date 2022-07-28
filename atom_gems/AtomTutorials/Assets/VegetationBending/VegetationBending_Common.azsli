@@ -1,0 +1,197 @@
+/*
+ * Copyright (c) Contributors to the Open 3D Engine Project.
+ * For complete copyright and license terms please see the LICENSE at the root of this distribution.
+ *
+ * SPDX-License-Identifier: Apache-2.0 OR MIT
+ *
+ */
+
+#include <Atom/Features/SrgSemantics.azsli>
+#include <viewsrg.srgi>
+#include <Atom/RPI/ShaderResourceGroups/DefaultDrawSrg.azsli>
+#include <Atom/Features/PBR/LightingOptions.azsli>
+#include <Atom/Features/PBR/AlphaUtils.azsli>
+
+#include "Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/BaseColorInput.azsli"
+#include "Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/RoughnessInput.azsli"
+#include "Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/MetallicInput.azsli"
+#include "Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/SpecularInput.azsli"
+#include "Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/NormalInput.azsli"
+#include "Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/ClearCoatInput.azsli"
+#include "Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/OcclusionInput.azsli"
+#include "Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/EmissiveInput.azsli"
+#include "Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/ParallaxInput.azsli"
+#include "Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/UvSetCount.azsli"
+
+ShaderResourceGroup MaterialSrg : SRG_PerMaterial
+{
+    // Auto-generate material SRG fields for common inputs
+    COMMON_SRG_INPUTS_BASE_COLOR()
+    COMMON_SRG_INPUTS_ROUGHNESS()
+    COMMON_SRG_INPUTS_METALLIC()
+    COMMON_SRG_INPUTS_SPECULAR_F0()
+    COMMON_SRG_INPUTS_NORMAL()
+    COMMON_SRG_INPUTS_CLEAR_COAT()
+    COMMON_SRG_INPUTS_OCCLUSION()     
+    COMMON_SRG_INPUTS_EMISSIVE()      
+    COMMON_SRG_INPUTS_PARALLAX()
+    
+    uint m_parallaxUvIndex;
+    float m_parallax_pdo_shadowFactor;
+
+    float3x3 m_uvMatrix;
+    float4 m_pad1; // [GFX TODO][ATOM-14595] This is a workaround for a data stomping bug. Remove once it's fixed.
+    float3x3 m_uvMatrixInverse;
+    float4 m_pad2; // [GFX TODO][ATOM-14595] This is a workaround for a data stomping bug. Remove once it's fixed.
+
+    float m_opacityFactor;
+    float m_opacityAffectsSpecularFactor;
+    Texture2D m_opacityMap;
+    uint m_opacityMapUvIndex;
+
+    // Detail bending parameters
+    float m_detailFrequency;
+    float m_detailLeafAmplitude;
+    float m_detailBranchAmplitude;
+
+    // Wind for bending. This would typically come from a wind system instead of a material property, but is here as a proof of concept.
+    float m_windX;
+    float m_windY;
+    float m_bendingStrength;
+    float m_windBendingFrequency;
+
+    Sampler m_sampler
+    {
+        AddressU = Wrap;
+        AddressV = Wrap;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+        MaxAnisotropy = 16;
+    };
+
+    Texture2D m_brdfMap;
+
+    Sampler m_samplerBrdf
+    {
+        AddressU = Clamp;
+        AddressV = Clamp;
+        MinFilter = Linear;
+        MagFilter = Linear;
+        MipFilter = Linear;
+    };
+}
+
+// Callback function for ParallaxMapping.azsli
+DepthResult GetDepth(float2 uv, float2 uv_ddx, float2 uv_ddy)
+{
+    return SampleDepthFromHeightmap(MaterialSrg::m_heightmap, MaterialSrg::m_sampler, uv, uv_ddx, uv_ddy);
+}
+
+
+COMMON_OPTIONS_PARALLAX()
+
+bool ShouldHandleParallax()
+{
+    // Parallax mapping's non uniform uv transformations break screen space subsurface scattering, disable it when subsurface scattering is enabled.
+    return !o_enableSubsurfaceScattering && o_parallax_feature_enabled && o_useHeightmap;
+}
+
+bool ShouldHandleParallaxInDepthShaders()
+{
+    // The depth pass shaders need to calculate parallax when the result could affect the depth buffer, or when
+    // parallax could affect texel clipping.
+    return ShouldHandleParallax() && (o_parallax_enablePixelDepthOffset || o_opacity_mode == OpacityMode::Cutout);
+}
+
+option bool o_color_isBound;
+
+// Derived from "Vegetation Procedural Animation and Shading in Crysis" in GPU Gems 3
+// https://developer.nvidia.com/gpugems/gpugems3/part-iii-rendering/chapter-16-vegetation-procedural-animation-and-shading-crysis
+
+// These are per-object values. They would typically be updated on the CPU to avoid duplicated work,
+// but for simplicity they are calculated here for each vertex as a proof of concept
+float4 SetUpWindBending(float currentTime, float4 worldPosition) 
+{
+    float2 wind = float2(MaterialSrg::m_windX, MaterialSrg::m_windY);
+    float bendingStrength = MaterialSrg::m_bendingStrength;
+    float2 amplitude = float2(wind.x * 0.4 + wind.y * 0.2, wind.y * 0.4 - wind.x * 0.2);
+    float2 frequency = float2(MaterialSrg::m_windBendingFrequency, MaterialSrg::m_windBendingFrequency * 1.125);
+    // Using the world position to modify the phase makes it so different trees near each other are at similar but not equal points in the animation, 
+    // so they appear to be reacting to the same wind but at different times as the wind moves through the vegetation.
+    float2 phase = worldPosition.xy * 0.08;
+
+    float2 bendAmount = sin(currentTime * frequency + phase) * amplitude;
+
+    float4 result;
+    result.xy = bendAmount + wind;
+    result.z = length(wind);
+    result.w = 0.3 * length(result.xy);
+    result.xyz *= bendingStrength * 0.08;
+
+    return result;
+}
+
+float3 DetailBending(float3 objectSpacePosition, float3 normal, float4 detailBendingParams, float currentTime, float4 worldPosition, float bendLength)
+{
+    // The information from the vertex colors about how to bend this vertex.
+    float edgeInfo = detailBendingParams.x;
+    float branchPhase = detailBendingParams.y;
+    float branchBendAmount = detailBendingParams.z;
+
+    // Phases (object, vertex, branch)
+    float objPhase = dot(worldPosition.xyz, 2.0); 
+    branchPhase += objPhase;
+    float vtxPhase = dot(objectSpacePosition, branchPhase); 
+
+    // Detail bending for leaves
+    // x: is used for leaves, y is used for branch
+    float2 wavesIn = currentTime;
+    wavesIn += float2(vtxPhase, branchPhase);
+    float4 waves = (frac(wavesIn.xxyy * float4(1.975, 0.793, 0.375,  0.193)) * 2.0 - 1.0) * MaterialSrg::m_detailFrequency * bendLength;
+    waves = abs(frac(waves + 0.5) * 2.0 - 1.0);
+
+    // x: is used for leaves, y is used for branches
+    float2 wavesSum = waves.xz + waves.yw;
+
+    // Leaf and branch bending (xy is used for leaves, z for branches)
+    float3 movement = wavesSum.xxy * float3(edgeInfo * MaterialSrg::m_detailLeafAmplitude * normal.xy, branchBendAmount * MaterialSrg::m_detailBranchAmplitude);
+    return objectSpacePosition + movement;
+}
+
+float3 MainBending(float3 objectSpacePosition, float4 bending)
+{
+    float windX = bending.x;
+    float windY = bending.y;
+    float bendScale = bending.z;
+
+    // More bending occurs higher up on the object
+    float bendFactor = objectSpacePosition.z * bendScale;
+    bendFactor *= bendFactor; 
+
+    // Rescale the displaced vertex position with the original distance to the object's center
+    // to restrict vertex movement to minimize deformation artifacts
+    float len = length(objectSpacePosition); 
+    float3 newPos = objectSpacePosition;
+    newPos.xy += float2(windX, windY) * bendFactor;
+
+    return normalize(newPos) * len;
+}
+
+float4 ProcessBending(float currentTime, float3 objectSpacePosition, float3 normal, float4 detailBendingParams, float4 worldPosition, float4x4 objectToWorld) 
+{
+    float4 adjustedWorldPosition = float4(worldPosition);
+    if (o_color_isBound) 
+    {
+        // Overall wind
+        float4 currentBending = SetUpWindBending(currentTime, worldPosition);
+
+        // Detail bending
+        float3 currentOutPosition = DetailBending(objectSpacePosition, normal, detailBendingParams, currentTime, worldPosition, currentBending.w);
+
+        currentOutPosition = MainBending(currentOutPosition, currentBending);
+
+        adjustedWorldPosition = mul(objectToWorld, float4(currentOutPosition, 1.0));
+    }
+    return adjustedWorldPosition;
+}

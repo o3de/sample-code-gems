@@ -1,0 +1,20 @@
+{
+  "name": "vegetationBending",
+  "displayName": "Vegetation Bending",
+  "description": "Properties for configuring the bending.",
+  "properties": [
+    {
+      "name": "xOffset",
+      "displayName": "xOffset",
+      "description": "The offset in the x direction.",
+      "type": "Float",
+      "defaultValue": 0.0,
+      "min": 0.0,
+      "max": 10.0,
+      "connection": {
+        "type": "ShaderInput",
+        "name": "m_xOffset"
+      }
+    }
+  ]
+}
