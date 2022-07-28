@@ -43,9 +43,6 @@ VSOutput MainVS(VSInput IN)
     
     float4x4 prevObjectToWorld = SceneSrg::GetObjectToWorldMatrixPrev(ObjectSrg::m_objectId);
     float4 prevWorldPosition = mul(prevObjectToWorld, float4(IN.m_position, 1.0));
-   
-    float currentTime = SceneSrg::m_time;
-    worldPosition = ProcessBending(currentTime, IN.m_position, IN.m_normal, IN.m_optional_color, worldPosition, objectToWorld);
 
     OUT.m_worldPos = worldPosition.xyz;
     OUT.m_worldPosPrev = prevWorldPosition.xyz;
