@@ -7,40 +7,40 @@
                 "$import": "MaterialInputs/SixPointLightingPropertyGroup.json"
             },
             { 
-                "$import": "C:/Users/njud/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/BaseColorPropertyGroup.json"
+                "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/BaseColorPropertyGroup.json"
             },
             { 
-                "$import": "C:/Users/njud/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/MetallicPropertyGroup.json"
+                "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/MetallicPropertyGroup.json"
             },
             { 
-                "$import": "C:/Users/njud/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/RoughnessPropertyGroup.json"
+                "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/RoughnessPropertyGroup.json"
             },
             { 
-                "$import": "C:/Users/njud/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/SpecularPropertyGroup.json"
+                "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/SpecularPropertyGroup.json"
             },
             { 
-                "$import": "C:/Users/njud/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/NormalPropertyGroup.json"
+                "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/NormalPropertyGroup.json"
             },
             { 
-                "$import": "C:/Users/njud/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/OcclusionPropertyGroup.json"
+                "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/OcclusionPropertyGroup.json"
             },
             { 
-                "$import": "C:/Users/njud/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/EmissivePropertyGroup.json"
+                "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/EmissivePropertyGroup.json"
             },
             { 
-                "$import": "C:/Users/njud/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/ClearCoatPropertyGroup.json"
+                "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/ClearCoatPropertyGroup.json"
             },
             { 
-                "$import": "C:/Users/njud/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/OpacityPropertyGroup.json"
+                "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/OpacityPropertyGroup.json"
             },
             { 
-                "$import": "C:/Users/njud/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/UvPropertyGroup.json"
+                "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/UvPropertyGroup.json"
             },
             { 
-                "$import": "C:/Users/njud/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/IrradiancePropertyGroup.json"
+                "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/IrradiancePropertyGroup.json"
             },
             { 
-                "$import": "C:/Users/njud/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/GeneralCommonPropertyGroup.json"
+                "$import": "{your-path-to-o3de}/o3de/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/GeneralCommonPropertyGroup.json"
             }
         ]
     },
