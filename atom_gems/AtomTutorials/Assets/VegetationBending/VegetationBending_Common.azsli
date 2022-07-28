@@ -119,27 +119,25 @@ float4 SetUpWindBending(float currentTime, float4 worldPosition)
     float2 frequency = float2(MaterialSrg::m_windBendingFrequency, MaterialSrg::m_windBendingFrequency * 1.125);
     // Using the world position to modify the phase makes it so different trees near each other are at similar but not equal points in the animation, 
     // so they appear to be reacting to the same wind but at different times as the wind moves through the vegetation.
-    float2 phase = float2(worldPosition.x * 0.08, worldPosition.y * 0.08);
+    float2 phase = worldPosition.xy * 0.08;
 
-    float2 addBending = float2(sin(currentTime * frequency.x + phase.x) * amplitude.x, sin(currentTime * frequency.y + phase.y) * amplitude.y);
+    float2 bendAmount = sin(currentTime * frequency + phase) * amplitude;
 
     float4 result;
-    result.x = addBending.x + wind.x;
-    result.y = addBending.y + wind.y;
-    result.z = sqrt(wind.x * wind.x + wind.y * wind.y);
-    result *= bendingStrength * 0.08;
-    float2 totalBending = addBending + wind;
-    result.w = sqrt(totalBending.x * totalBending.x + totalBending.y * totalBending.y) * 0.3;
+    result.xy = bendAmount + wind;
+    result.z = length(wind);
+    result.w = 0.3 * length(result.xy);
+    result.xyz *= bendingStrength * 0.08;
 
     return result;
 }
 
-float3 DetailBending(float3 objectSpacePosition, float3 normal, float4 color, float currentTime, float4 worldPosition, float bendLength)
+float3 DetailBending(float3 objectSpacePosition, float3 normal, float4 detailBendingParams, float currentTime, float4 worldPosition, float bendLength)
 {
     // The information from the vertex colors about how to bend this vertex.
-    float edgeInfo = color.x;
-    float branchPhase = color.y;
-    float branchBendAmount = color.z;
+    float edgeInfo = detailBendingParams.x;
+    float branchPhase = detailBendingParams.y;
+    float branchBendAmount = detailBendingParams.z;
 
     // Phases (object, vertex, branch)
     float objPhase = dot(worldPosition.xyz, 2.0); 
@@ -180,7 +178,7 @@ float3 MainBending(float3 objectSpacePosition, float4 bending)
     return normalize(newPos) * len;
 }
 
-float4 ProcessBending(float currentTime, float3 objectSpacePosition, float3 normal, float4 color, float4 worldPosition, float4x4 objectToWorld) 
+float4 ProcessBending(float currentTime, float3 objectSpacePosition, float3 normal, float4 detailBendingParams, float4 worldPosition, float4x4 objectToWorld) 
 {
     float4 adjustedWorldPosition = float4(worldPosition);
     if (o_color_isBound) 
@@ -189,7 +187,7 @@ float4 ProcessBending(float currentTime, float3 objectSpacePosition, float3 norm
         float4 currentBending = SetUpWindBending(currentTime, worldPosition);
 
         // Detail bending
-        float3 currentOutPosition = DetailBending(objectSpacePosition, normal, color, currentTime, worldPosition, currentBending.w);
+        float3 currentOutPosition = DetailBending(objectSpacePosition, normal, detailBendingParams, currentTime, worldPosition, currentBending.w);
 
         currentOutPosition = MainBending(currentOutPosition, currentBending);
 

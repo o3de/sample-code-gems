@@ -73,6 +73,10 @@
     {
       "file": "./VegetationBending_DepthPass_WithPS.shader",
       "tag": "DepthPass_WithPS"
+    },
+    {
+      "file": "./MeshMotionVectorVegetationBending.shader",
+      "tag": "MeshMotionVector"
     }
   ],
   "functors": [
