@@ -13,6 +13,7 @@
 #include <AtomTutorials/Billboard/BillboardComponentConfig.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
+#include <AzFramework/Components/CameraBus.h>
 
 namespace AZ
 {
@@ -75,8 +76,6 @@ namespace AZ
             EntityId m_entityId;
             BillboardComponentConfig m_configuration;
             AZStd::vector<AZ::Vector3> m_axisGridPoints;
-            AZStd::vector<AZ::Vector3> m_primaryGridPoints;
-            AZStd::vector<AZ::Vector3> m_secondaryGridPoints;
             bool m_dirty = true; // must be set to true for any configuration change that rebuilds the grid
         };
     } // namespace Render

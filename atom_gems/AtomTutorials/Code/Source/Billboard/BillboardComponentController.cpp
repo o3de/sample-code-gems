@@ -188,17 +188,6 @@ namespace AZ
                 BuildGrid();
 
                 AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArgs;
-                drawArgs.m_verts = m_secondaryGridPoints.data();
-                drawArgs.m_vertCount = aznumeric_cast<uint32_t>(m_secondaryGridPoints.size());
-                drawArgs.m_colors = &m_configuration.m_secondaryColor;
-                drawArgs.m_colorCount = 1;
-                auxGeom->DrawLines(drawArgs);
-
-                drawArgs.m_verts = m_primaryGridPoints.data();
-                drawArgs.m_vertCount = aznumeric_cast<uint32_t>(m_primaryGridPoints.size());
-                drawArgs.m_colors = &m_configuration.m_primaryColor;
-                auxGeom->DrawLines(drawArgs);
-
                 drawArgs.m_verts = m_axisGridPoints.data();
                 drawArgs.m_vertCount = aznumeric_cast<uint32_t>(m_axisGridPoints.size());
                 drawArgs.m_colors = &m_configuration.m_axisColor;
@@ -215,54 +204,75 @@ namespace AZ
 
         void BillboardComponentController::BuildGrid()
         {
-            if (m_dirty)
-            {
-                m_dirty = false;
+            EntityId cam;
+            Camera::CameraSystemRequestBus::BroadcastResult(cam, &Camera::CameraSystemRequests::GetActiveCamera);
 
-                AZ::Transform transform;
-                AZ::TransformBus::EventResult(transform, m_entityId, &AZ::TransformBus::Events::GetWorldTM);
+            AZ::Vector3 cameraWorldPosition;
+            AZ::TransformBus::EventResult(cameraWorldPosition, cam, &AZ::TransformBus::Events::GetWorldTranslation);
 
-                const float halfLength = m_configuration.m_gridSize / 2.0f;
+            AZ::Vector3 myPosition;
+            AZ::TransformBus::EventResult(myPosition, m_entityId, &AZ::TransformBus::Events::GetWorldTranslation);
 
-                m_axisGridPoints.clear();
-                m_axisGridPoints.reserve(4);
-                m_axisGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-halfLength, 0, 0.0f)));
-                m_axisGridPoints.push_back(transform.TransformPoint(AZ::Vector3(halfLength, 0, 0.0f)));
-                m_axisGridPoints.push_back(transform.TransformPoint(AZ::Vector3(0, -halfLength, 0.0f)));
-                m_axisGridPoints.push_back(transform.TransformPoint(AZ::Vector3(0, halfLength, 0.0f)));
+            const float halfLength = m_configuration.m_gridSize / 2.0f;
 
-                m_primaryGridPoints.clear();
-                m_primaryGridPoints.reserve(aznumeric_cast<size_t>(4.0f * m_configuration.m_gridSize / m_configuration.m_primarySpacing));
-                for (float position = m_configuration.m_primarySpacing; position <= halfLength;
-                     position += m_configuration.m_primarySpacing)
-                {
-                    m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-halfLength, -position, 0.0f)));
-                    m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(halfLength, -position, 0.0f)));
-                    m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-halfLength, position, 0.0f)));
-                    m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(halfLength, position, 0.0f)));
-                    m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-position, -halfLength, 0.0f)));
-                    m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-position, halfLength, 0.0f)));
-                    m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(position, -halfLength, 0.0f)));
-                    m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(position, halfLength, 0.0f)));
-                }
+            // From camera POV, the forward axis is Z positive, even though O3DE's default is Y positive for forward axis.
+            AZ::Matrix3x4 viewMatrix = AZ::Matrix3x4::CreateFromTransform(AZ::Transform::CreateLookAt(cameraWorldPosition, myPosition, AZ::Transform::Axis::ZPositive));
+            AZ::Vector3 cameraRight = AZ::Vector3(viewMatrix(0, 0), viewMatrix(1, 0), viewMatrix(2, 0));
+            AZ::Vector3 cameraUp = AZ::Vector3(viewMatrix(0, 1), viewMatrix(1, 1), viewMatrix(2, 1));
 
-                m_secondaryGridPoints.clear();
-                m_secondaryGridPoints.reserve(aznumeric_cast<size_t>(4.0f * m_configuration.m_gridSize / m_configuration.m_secondarySpacing));
-                for (float position = m_configuration.m_secondarySpacing; position <= halfLength;
-                     position += m_configuration.m_secondarySpacing)
-                {
-                    m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-halfLength, -position, 0.0f)));
-                    m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(halfLength, -position, 0.0f)));
-                    m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-halfLength, position, 0.0f)));
-                    m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(halfLength, position, 0.0f)));
-                    m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-position, -halfLength, 0.0f)));
-                    m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-position, halfLength, 0.0f)));
-                    m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(position, -halfLength, 0.0f)));
-                    m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(position, halfLength, 0.0f)));
-                }
+            AZ::Vector3 p0_world = myPosition + cameraRight * halfLength + cameraUp * halfLength; // top right
+            AZ::Vector3 p1_world = myPosition + cameraRight * halfLength - cameraUp * halfLength; // bottom right
+            AZ::Vector3 p2_world = myPosition - cameraRight * halfLength - cameraUp * halfLength; // bottom left
+            AZ::Vector3 p3_world = myPosition - cameraRight * halfLength + cameraUp * halfLength; // top left
 
-                BillboardComponentNotificationBus::Event(m_entityId, &BillboardComponentNotificationBus::Events::OnGridChanged);
-            }
+
+            // Make lines
+            m_axisGridPoints.clear();
+            m_axisGridPoints.reserve(8);
+            // Right
+            m_axisGridPoints.push_back(p0_world);
+            m_axisGridPoints.push_back(p1_world);
+            // Bottom
+            m_axisGridPoints.push_back(p1_world);
+            m_axisGridPoints.push_back(p2_world);
+            // Left
+            m_axisGridPoints.push_back(p2_world);
+            m_axisGridPoints.push_back(p3_world);
+            // Top
+            m_axisGridPoints.push_back(p3_world);
+            m_axisGridPoints.push_back(p0_world);
+
+            // m_primaryGridPoints.clear();
+            // m_primaryGridPoints.reserve(aznumeric_cast<size_t>(4.0f * m_configuration.m_gridSize / m_configuration.m_primarySpacing));
+            // for (float position = m_configuration.m_primarySpacing; position <= halfLength;
+            //      position += m_configuration.m_primarySpacing)
+            // {
+            //     m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-halfLength, -position, 0.0f)));
+            //     m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(halfLength, -position, 0.0f)));
+            //     m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-halfLength, position, 0.0f)));
+            //     m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(halfLength, position, 0.0f)));
+            //     m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-position, -halfLength, 0.0f)));
+            //     m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-position, halfLength, 0.0f)));
+            //     m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(position, -halfLength, 0.0f)));
+            //     m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(position, halfLength, 0.0f)));
+            // }
+
+            // m_secondaryGridPoints.clear();
+            // m_secondaryGridPoints.reserve(aznumeric_cast<size_t>(4.0f * m_configuration.m_gridSize / m_configuration.m_secondarySpacing));
+            // for (float position = m_configuration.m_secondarySpacing; position <= halfLength;
+            //      position += m_configuration.m_secondarySpacing)
+            // {
+            //     m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-halfLength, -position, 0.0f)));
+            //     m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(halfLength, -position, 0.0f)));
+            //     m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-halfLength, position, 0.0f)));
+            //     m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(halfLength, position, 0.0f)));
+            //     m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-position, -halfLength, 0.0f)));
+            //     m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-position, halfLength, 0.0f)));
+            //     m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(position, -halfLength, 0.0f)));
+            //     m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(position, halfLength, 0.0f)));
+            // }
+
+            BillboardComponentNotificationBus::Event(m_entityId, &BillboardComponentNotificationBus::Events::OnGridChanged);
         }
     } // namespace Render
 } // namespace AZ
