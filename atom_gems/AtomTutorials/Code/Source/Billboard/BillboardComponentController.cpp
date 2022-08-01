@@ -10,6 +10,7 @@
 #include <Atom/RPI.Public/AuxGeom/AuxGeomFeatureProcessorInterface.h>
 #include <Atom/RPI.Public/Scene.h>
 #include <Atom/Utils/Utils.h>
+#include <Atom/RPI.Public/DynamicDraw/DynamicDrawInterface.h>
 #include <AtomTutorials/Billboard/BillboardComponentConstants.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzCore/RTTI/BehaviorContext.h>
@@ -85,6 +86,22 @@ namespace AZ
 
             BillboardComponentRequestBus::Handler::BusConnect(m_entityId);
             AZ::TransformNotificationBus::Handler::BusConnect(m_entityId);
+
+            // Dynamic Draw
+            AZStd::vector<RPI::DynamicDrawContext::VertexChannel> vertexChannels =
+            {
+                { "POSITION", RHI::Format::R32G32B32_FLOAT },
+                { "COLOR", RHI::Format::R32G32B32A32_FLOAT }
+            };
+
+            m_dynamicDraw = RPI::DynamicDrawInterface::Get()->CreateDynamicDrawContext();
+            m_dynamicDraw->InitVertexFormat(vertexChannels);
+            m_dynamicDraw->AddDrawStateOptions(RPI::DynamicDrawContext::DrawStateOptions::BlendMode | RPI::DynamicDrawContext::DrawStateOptions::PrimitiveType
+                | RPI::DynamicDrawContext::DrawStateOptions::DepthState | RPI::DynamicDrawContext::DrawStateOptions::FaceCullMode);
+            m_dynamicDraw->SetOutputScope(scene);
+            m_dynamicDraw->EndInit();
+
+            AZ_Assert(m_dynamicDraw->IsVertexSizeValid(sizeof(ExampleVertex)), "Invalid vertex format");
         }
 
         void BillboardComponentController::Deactivate()
@@ -187,11 +204,12 @@ namespace AZ
             {
                 BuildGrid();
 
+                /*
                 AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArgs;
                 drawArgs.m_verts = m_axisGridPoints.data();
                 drawArgs.m_vertCount = aznumeric_cast<uint32_t>(m_axisGridPoints.size());
                 drawArgs.m_colors = &m_configuration.m_axisColor;
-                auxGeom->DrawLines(drawArgs);
+                auxGeom->DrawLines(drawArgs);*/
             }
         }
 
@@ -225,7 +243,7 @@ namespace AZ
             AZ::Vector3 p2_world = myPosition - cameraRight * halfLength - cameraUp * halfLength; // bottom left
             AZ::Vector3 p3_world = myPosition - cameraRight * halfLength + cameraUp * halfLength; // top left
 
-
+            /*
             // Make lines
             m_axisGridPoints.clear();
             m_axisGridPoints.reserve(8);
@@ -240,37 +258,44 @@ namespace AZ
             m_axisGridPoints.push_back(p3_world);
             // Top
             m_axisGridPoints.push_back(p3_world);
-            m_axisGridPoints.push_back(p0_world);
+            m_axisGridPoints.push_back(p0_world);*/
 
-            // m_primaryGridPoints.clear();
-            // m_primaryGridPoints.reserve(aznumeric_cast<size_t>(4.0f * m_configuration.m_gridSize / m_configuration.m_primarySpacing));
-            // for (float position = m_configuration.m_primarySpacing; position <= halfLength;
-            //      position += m_configuration.m_primarySpacing)
-            // {
-            //     m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-halfLength, -position, 0.0f)));
-            //     m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(halfLength, -position, 0.0f)));
-            //     m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-halfLength, position, 0.0f)));
-            //     m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(halfLength, position, 0.0f)));
-            //     m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-position, -halfLength, 0.0f)));
-            //     m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-position, halfLength, 0.0f)));
-            //     m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(position, -halfLength, 0.0f)));
-            //     m_primaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(position, halfLength, 0.0f)));
-            // }
+            float positions[4][3] =
+            {
+                {p0_world.GetX(), p0_world.GetY(), p0_world.GetZ()},
+                {p1_world.GetX(), p1_world.GetY(), p1_world.GetZ()},
+                {p2_world.GetX(), p2_world.GetY(), p2_world.GetZ()},
+                {p3_world.GetX(), p3_world.GetY(), p3_world.GetZ()},
+            };
 
-            // m_secondaryGridPoints.clear();
-            // m_secondaryGridPoints.reserve(aznumeric_cast<size_t>(4.0f * m_configuration.m_gridSize / m_configuration.m_secondarySpacing));
-            // for (float position = m_configuration.m_secondarySpacing; position <= halfLength;
-            //      position += m_configuration.m_secondarySpacing)
-            // {
-            //     m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-halfLength, -position, 0.0f)));
-            //     m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(halfLength, -position, 0.0f)));
-            //     m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-halfLength, position, 0.0f)));
-            //     m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(halfLength, position, 0.0f)));
-            //     m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-position, -halfLength, 0.0f)));
-            //     m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(-position, halfLength, 0.0f)));
-            //     m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(position, -halfLength, 0.0f)));
-            //     m_secondaryGridPoints.push_back(transform.TransformPoint(AZ::Vector3(position, halfLength, 0.0f)));
-            // }
+            float colors[4][4] = { { 1, 0, 0, 0.5f }, { 0, 1, 0, 0.5f }, { 0, 0, 1, 0.5f }, {1, 1, 0, 0.5f} };
+
+            ExampleVertex vertices[8] = {
+                ExampleVertex{positions[0], colors[0]},
+                ExampleVertex{positions[1], colors[0]},
+                ExampleVertex{positions[1], colors[0]},
+                ExampleVertex{positions[2], colors[0]},
+                ExampleVertex{positions[2], colors[0]},
+                ExampleVertex{positions[3], colors[0]},
+                ExampleVertex{positions[3], colors[0]},
+                ExampleVertex{positions[0], colors[0]}
+            };
+
+            RHI::DepthState depthState;
+            depthState.m_enable = true;
+            depthState.m_writeMask = RHI::DepthWriteMask::All;
+            depthState.m_func = RHI::ComparisonFunc::GreaterEqual;
+            m_dynamicDraw->SetDepthState(depthState);
+            // Disable blend
+            RHI::TargetBlendState blendState;
+            blendState.m_enable = false;
+            m_dynamicDraw->SetTarget0BlendState(blendState);
+
+            Data::Instance<RPI::ShaderResourceGroup> drawSrg = m_dynamicDraw->NewDrawSrg();
+            drawSrg->Compile();
+
+            m_dynamicDraw->SetCullMode(RHI::CullMode::None);
+            m_dynamicDraw->DrawLinear(vertices, 8, drawSrg);
 
             BillboardComponentNotificationBus::Event(m_entityId, &BillboardComponentNotificationBus::Events::OnGridChanged);
         }

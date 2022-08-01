@@ -9,11 +9,13 @@
 #pragma once
 
 #include <Atom/RPI.Public/SceneBus.h>
+#include <Atom/RPI.Public/DynamicDraw/DynamicDrawContext.h>
 #include <AtomTutorials/Billboard/BillboardComponentBus.h>
 #include <AtomTutorials/Billboard/BillboardComponentConfig.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Components/CameraBus.h>
+#include <Atom/Utils/AssetCollectionAsyncLoader.h>
 
 namespace AZ
 {
@@ -50,6 +52,17 @@ namespace AZ
         private:
             AZ_DISABLE_COPY(BillboardComponentController);
 
+            struct ExampleVertex
+            {
+                ExampleVertex(float position[3], float color[4])
+                {
+                    memcpy(m_position, position, sizeof(float) * 3);
+                    memcpy(m_color, color, sizeof(float) * 4);
+                }
+                float m_position[3];
+                float m_color[4];
+            };
+
             //! BillboardComponentRequestBus overrides...
             void SetSize(float size) override;
             float GetSize() const override;
@@ -77,6 +90,10 @@ namespace AZ
             BillboardComponentConfig m_configuration;
             AZStd::vector<AZ::Vector3> m_axisGridPoints;
             bool m_dirty = true; // must be set to true for any configuration change that rebuilds the grid
+            AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> m_dynamicDraw;
+
+            //! Async asset load
+            AZ::AssetCollectionAsyncLoader m_assetLoadManager;
         };
     } // namespace Render
 } // namespace AZ
