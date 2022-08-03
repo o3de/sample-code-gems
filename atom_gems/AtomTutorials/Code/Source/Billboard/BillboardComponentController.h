@@ -16,8 +16,6 @@
 #include <AzFramework/Components/CameraBus.h>
 #include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
 #include <Atom/RPI.Reflect/Asset/AssetUtils.h>
-#include <AzFramework/Render/GeometryIntersectionBus.h>
-#include <AzFramework/Visibility/BoundsBus.h>
 
 namespace AZ
 {
@@ -28,8 +26,6 @@ namespace AZ
             : public BillboardComponentRequestBus::Handler
             , public AZ::TransformNotificationBus::Handler
             , public AZ::RPI::SceneNotificationBus::Handler
-            , public AzFramework::BoundsRequestBus::Handler
-            , public AzFramework::RenderGeometry::IntersectionRequestBus::Handler
         {
         public:
             friend class EditorBillboardComponent;
@@ -88,24 +84,13 @@ namespace AZ
             // AZ::RPI::SceneNotificationBus::Handler overrides ...
             void OnBeginPrepareRender() override;
 
-            // BoundsRequestBus and MeshComponentRequestBus overrides ...
-            AZ::Aabb GetWorldBounds() override;
-            AZ::Aabb GetLocalBounds() override;
-
-            // IntersectionRequestBus overrides ...
-            AzFramework::RenderGeometry::RayResult RenderGeometryIntersect(const AzFramework::RenderGeometry::RayRequest& ray) override;
-
             void BuildGrid();
 
             BillboardComponentConfig m_configuration;
             AZStd::vector<AZ::Vector3> m_axisGridPoints;
             bool m_dirty = true; // must be set to true for any configuration change that rebuilds the grid
 
-            //! Cached bus to use to notify RenderGeometry::Intersector the entity/component has changed.
-            AzFramework::RenderGeometry::IntersectionNotificationBus::BusPtr m_intersectionNotificationBus;
-
             AZ::Render::MeshFeatureProcessorInterface* m_meshFeatureProcessor;
-            TransformInterface* m_transformInterface = nullptr;
 
             AZ::Data::Asset<AZ::RPI::ModelAsset> m_modelAsset;
             AZ::Render::MeshFeatureProcessorInterface::MeshHandle m_meshHandle;

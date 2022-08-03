@@ -90,14 +90,6 @@ namespace AZ
             AzFramework::EntityContextId contextId = AzFramework::EntityContextId::CreateNull();
             AzFramework::EntityIdContextQueryBus::EventResult(
                 contextId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
-            AzFramework::BoundsRequestBus::Handler::BusConnect(entityId);
-            AzFramework::RenderGeometry::IntersectionRequestBus::Handler::BusConnect({ entityId, contextId });
-            AzFramework::RenderGeometry::IntersectionNotificationBus::Bind(m_intersectionNotificationBus, contextId);
-
-            m_transformInterface = TransformBus::FindFirstHandler(entityId);
-            AZ_Warning(
-                "BillboardComponentController", m_transformInterface,
-                "Unable to attach to a TransformBus handler. This mesh will always be rendered at the origin.");
 
             m_meshFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<Render::MeshFeatureProcessorInterface>(entityId);
             AZ_Assert(m_meshFeatureProcessor, "MeshFeatureProcessor not available.");
@@ -106,75 +98,26 @@ namespace AZ
             m_material = AZ::RPI::Material::FindOrCreate(materialAsset);
             m_modelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>("materialeditor/viewportmodels/plane_1x1.azmodel", AZ::RPI::AssetUtils::TraceLevel::Assert);
             auto meshDescriptor = AZ::Render::MeshHandleDescriptor{ m_modelAsset };
-            meshDescriptor.m_isRayTracingEnabled = false;
 
             m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor, m_material);
 
-            const AZ::Transform& transform =
-                m_transformInterface ? m_transformInterface->GetWorldTM() : AZ::Transform::CreateIdentity();
-            
-            m_meshFeatureProcessor->SetRayTracingEnabled(m_meshHandle, false);
-            m_meshFeatureProcessor->SetTransform(m_meshHandle, transform);
+            m_meshFeatureProcessor->SetTransform(m_meshHandle, AZ::Transform::CreateIdentity());
         }
 
         void BillboardComponentController::Deactivate()
         {
-            AzFramework::RenderGeometry::IntersectionRequestBus::Handler::BusDisconnect();
-            AzFramework::BoundsRequestBus::Handler::BusDisconnect();
+            if (m_meshFeatureProcessor && m_meshHandle.IsValid())
+            {
+                m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
+            }
+
             AZ::TransformNotificationBus::Handler::BusDisconnect();
             BillboardComponentRequestBus::Handler::BusDisconnect();
             AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
 
+            m_meshFeatureProcessor = nullptr;
             m_entityComponentIdPair = AZ::EntityComponentIdPair(AZ::EntityId(), AZ::InvalidComponentId);
-        }
-
-        Aabb BillboardComponentController::GetWorldBounds()
-        {
-            if (const AZ::Aabb localBounds = GetLocalBounds(); localBounds.IsValid())
-            {
-                return localBounds.GetTransformedAabb(m_transformInterface->GetWorldTM());
-            }
-
-            return AZ::Aabb::CreateNull();
-        }
-
-        Aabb BillboardComponentController::GetLocalBounds()
-        {
-            if (m_meshHandle.IsValid() && m_meshFeatureProcessor)
-            {
-                if (Aabb aabb = m_meshFeatureProcessor->GetLocalAabb(m_meshHandle); aabb.IsValid())
-                {
-                    return aabb;
-                }
-            }
-
-            return Aabb::CreateNull();
-        }
-        
-
-        AzFramework::RenderGeometry::RayResult BillboardComponentController::RenderGeometryIntersect(
-            const AzFramework::RenderGeometry::RayRequest& ray)
-        {
-            AzFramework::RenderGeometry::RayResult result;
-            const Data::Instance<RPI::Model> model = m_meshFeatureProcessor->GetModel(m_meshHandle);
-                float t;
-                AZ::Transform curT = m_meshFeatureProcessor->GetTransform(m_meshHandle);
-
-                AZ::Vector3 normal;
-                if (model->RayIntersection(
-                    curT, AZ::Vector3::CreateOne(), ray.m_startWorldPosition,
-                    ray.m_endWorldPosition - ray.m_startWorldPosition, t, normal))
-                {
-                    // fill in ray result structure after successful intersection
-                    const auto intersectionLine = (ray.m_endWorldPosition - ray.m_startWorldPosition);
-                    result.m_uv = AZ::Vector2::CreateZero();
-                    result.m_worldPosition = ray.m_startWorldPosition + intersectionLine * t;
-                    result.m_worldNormal = normal;
-                    result.m_distance = intersectionLine.GetLength() * t;
-                    result.m_entityAndComponent = m_entityComponentIdPair;
-                }
-
-            return result;
+            m_modelAsset.Release();
         }
 
         void BillboardComponentController::SetConfiguration(const BillboardComponentConfig& config)
@@ -326,10 +269,6 @@ namespace AZ
             AZ::Transform tf = AZ::Transform::CreateLookAt(myPosition, cameraWorldPosition, AZ::Transform::Axis::ZPositive);
             m_meshFeatureProcessor->SetTransform(m_meshHandle, tf);
 
-            AzFramework::RenderGeometry::IntersectionNotificationBus::Event(
-                m_intersectionNotificationBus, &AzFramework::RenderGeometry::IntersectionNotificationBus::Events::OnGeometryChanged,
-                m_entityComponentIdPair.GetEntityId());
-
             /*
             AZ::Vector3 cameraRight = AZ::Vector3(viewMatrix(0, 0), viewMatrix(1, 0), viewMatrix(2, 0));
             AZ::Vector3 cameraUp = AZ::Vector3(viewMatrix(0, 1), viewMatrix(1, 1), viewMatrix(2, 1));
@@ -354,29 +293,7 @@ namespace AZ
             m_axisGridPoints.push_back(p3_world);
             // Top
             m_axisGridPoints.push_back(p3_world);
-            m_axisGridPoints.push_back(p0_world);
-
-            float positions[4][3] =
-            {
-                {p0_world.GetX(), p0_world.GetY(), p0_world.GetZ()},
-                {p1_world.GetX(), p1_world.GetY(), p1_world.GetZ()},
-                {p2_world.GetX(), p2_world.GetY(), p2_world.GetZ()},
-                {p3_world.GetX(), p3_world.GetY(), p3_world.GetZ()},
-            };
-
-            float colors[4][4] = { { 1, 0, 0, 0.5f }, { 0, 1, 0, 0.5f }, { 0, 0, 1, 0.5f }, {1, 1, 0, 0.5f} };
-
-            ExampleVertex vertices[8] = {
-                ExampleVertex{positions[0], colors[0]},
-                ExampleVertex{positions[1], colors[0]},
-                ExampleVertex{positions[1], colors[0]},
-                ExampleVertex{positions[2], colors[0]},
-                ExampleVertex{positions[2], colors[0]},
-                ExampleVertex{positions[3], colors[0]},
-                ExampleVertex{positions[3], colors[0]},
-                ExampleVertex{positions[0], colors[0]}
-            };
-            */
+            m_axisGridPoints.push_back(p0_world);*/
             
 
             BillboardComponentNotificationBus::Event(m_entityComponentIdPair.GetEntityId(), &BillboardComponentNotificationBus::Events::OnGridChanged);
