@@ -53,15 +53,6 @@ namespace AZ
                             ->Attribute(AZ::Edit::Attributes::Min, BillboardComponentController::MinGridSize)
                             ->Attribute(AZ::Edit::Attributes::Max, BillboardComponentController::MaxGridSize)
                             ->Attribute(AZ::Edit::Attributes::Suffix, " m")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &BillboardComponentConfig::m_primarySpacing, "Primary Grid Spacing", "Amount of space between grid lines")
-                            ->Attribute(AZ::Edit::Attributes::Min, BillboardComponentController::MinSpacing)
-                            ->Attribute(AZ::Edit::Attributes::Suffix, " m")
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &BillboardComponentConfig::m_secondarySpacing, "Secondary Grid Spacing", "Amount of space between sub-grid lines")
-                            ->Attribute(AZ::Edit::Attributes::Min, BillboardComponentController::MinSpacing)
-                            ->Attribute(AZ::Edit::Attributes::Suffix, " m")
-                        ->DataElement(AZ::Edit::UIHandlers::Color, &BillboardComponentConfig::m_axisColor, "Axis Color", "Color of the grid axis")
-                        ->DataElement(AZ::Edit::UIHandlers::Color, &BillboardComponentConfig::m_primaryColor, "Primary Color", "Color of the primary grid lines")
-                        ->DataElement(AZ::Edit::UIHandlers::Color, &BillboardComponentConfig::m_secondaryColor, "Secondary Color", "Color of the secondary grid lines")
                         ;
                 }
             }

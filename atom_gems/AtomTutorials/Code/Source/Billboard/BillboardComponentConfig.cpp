@@ -20,11 +20,6 @@ namespace AZ
                 serializeContext->Class<BillboardComponentConfig, ComponentConfig>()
                     ->Version(0)
                     ->Field("gridSize", &BillboardComponentConfig::m_gridSize)
-                    ->Field("axisColor", &BillboardComponentConfig::m_axisColor)
-                    ->Field("primarySpacing", &BillboardComponentConfig::m_primarySpacing)
-                    ->Field("primaryColor", &BillboardComponentConfig::m_primaryColor)
-                    ->Field("secondarySpacing", &BillboardComponentConfig::m_secondarySpacing)
-                    ->Field("secondaryColor", &BillboardComponentConfig::m_secondaryColor)
                     ;
             }
         }

@@ -36,23 +36,7 @@ namespace AZ
             {
                 behaviorContext->EBus<BillboardComponentRequestBus>("BillboardComponentRequestBus")
                     ->Event("GetSize", &BillboardComponentRequestBus::Events::GetSize)
-                    ->Event("SetSize", &BillboardComponentRequestBus::Events::SetSize)
-                    ->Event("GetAxisColor", &BillboardComponentRequestBus::Events::GetAxisColor)
-                    ->Event("SetAxisColor", &BillboardComponentRequestBus::Events::SetAxisColor)
-                    ->Event("GetPrimaryColor", &BillboardComponentRequestBus::Events::GetPrimaryColor)
-                    ->Event("SetPrimaryColor", &BillboardComponentRequestBus::Events::SetPrimaryColor)
-                    ->Event("GetPrimarySpacing", &BillboardComponentRequestBus::Events::GetPrimarySpacing)
-                    ->Event("SetPrimarySpacing", &BillboardComponentRequestBus::Events::SetPrimarySpacing)
-                    ->Event("GetSecondaryColor", &BillboardComponentRequestBus::Events::GetSecondaryColor)
-                    ->Event("SetSecondaryColor", &BillboardComponentRequestBus::Events::SetSecondaryColor)
-                    ->Event("GetSecondarySpacing", &BillboardComponentRequestBus::Events::GetSecondarySpacing)
-                    ->Event("SetSecondarySpacing", &BillboardComponentRequestBus::Events::SetSecondarySpacing)
                     ->VirtualProperty("Size", "GetSize", "SetSize")
-                    ->VirtualProperty("AxisColor", "GetAxisColor", "SetAxisColor")
-                    ->VirtualProperty("PrimaryColor", "GetPrimaryColor", "SetPrimaryColor")
-                    ->VirtualProperty("PrimarySpacing", "GetPrimarySpacing", "SetPrimarySpacing")
-                    ->VirtualProperty("SecondaryColor", "GetSecondaryColor", "SetSecondaryColor")
-                    ->VirtualProperty("SecondarySpacing", "GetSecondarySpacing", "SetSecondarySpacing")
                     ;
             }
         }
@@ -94,7 +78,7 @@ namespace AZ
             m_meshFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<Render::MeshFeatureProcessorInterface>(entityId);
             AZ_Assert(m_meshFeatureProcessor, "MeshFeatureProcessor not available.");
 
-            AZ::Data::Asset<AZ::RPI::MaterialAsset> materialAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>("materials/presets/pbr/metal_gold.azmaterial", AZ::RPI::AssetUtils::TraceLevel::Error);
+            AZ::Data::Asset<AZ::RPI::MaterialAsset> materialAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>("assets/explosion.azmaterial", AZ::RPI::AssetUtils::TraceLevel::Error);
             m_material = AZ::RPI::Material::FindOrCreate(materialAsset);
             m_modelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>("materialeditor/viewportmodels/plane_1x1.azmodel", AZ::RPI::AssetUtils::TraceLevel::Assert);
             auto meshDescriptor = AZ::Render::MeshHandleDescriptor{ m_modelAsset };
@@ -142,57 +126,6 @@ namespace AZ
             return m_configuration.m_gridSize;
         }
 
-        void BillboardComponentController::SetPrimarySpacing(float spacing)
-        {
-            m_configuration.m_primarySpacing = AZStd::max(spacing, MinSpacing);
-            m_dirty = true;
-        }
-
-        float BillboardComponentController::GetPrimarySpacing() const
-        {
-            return m_configuration.m_primarySpacing;
-        }
-
-        void BillboardComponentController::SetSecondarySpacing(float spacing)
-        {
-            m_configuration.m_secondarySpacing = AZStd::max(spacing, MinSpacing);
-            m_dirty = true;
-        }
-
-        float BillboardComponentController::GetSecondarySpacing() const
-        {
-            return m_configuration.m_secondarySpacing;
-        }
-
-        void BillboardComponentController::SetAxisColor(const AZ::Color& color)
-        {
-            m_configuration.m_axisColor = color;
-        }
-
-        AZ::Color BillboardComponentController::GetAxisColor() const
-        {
-            return m_configuration.m_axisColor;
-        }
-
-        void BillboardComponentController::SetPrimaryColor(const AZ::Color& color)
-        {
-            m_configuration.m_primaryColor = color;
-        }
-
-        AZ::Color BillboardComponentController::GetPrimaryColor() const
-        {
-            return m_configuration.m_primaryColor;
-        }
-
-        void BillboardComponentController::SetSecondaryColor(const AZ::Color& color)
-        {
-            m_configuration.m_secondaryColor = color;
-        }
-
-        AZ::Color BillboardComponentController::GetSecondaryColor() const
-        {
-            return m_configuration.m_secondaryColor;
-        }
 
         void BillboardComponentController::OnBeginPrepareRender()
         {

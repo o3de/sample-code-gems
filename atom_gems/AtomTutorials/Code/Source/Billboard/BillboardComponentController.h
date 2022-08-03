@@ -52,31 +52,9 @@ namespace AZ
         private:
             AZ_DISABLE_COPY(BillboardComponentController);
 
-            struct ExampleVertex
-            {
-                ExampleVertex(float position[3], float color[4])
-                {
-                    memcpy(m_position, position, sizeof(float) * 3);
-                    memcpy(m_color, color, sizeof(float) * 4);
-                }
-                float m_position[3];
-                float m_color[4];
-            };
-
             //! BillboardComponentRequestBus overrides...
             void SetSize(float size) override;
             float GetSize() const override;
-            void SetPrimarySpacing(float spacing) override;
-            float GetPrimarySpacing() const override;
-            void SetSecondarySpacing(float spacing) override;
-            float GetSecondarySpacing() const override;
-
-            void SetAxisColor(const AZ::Color& color) override;
-            AZ::Color GetAxisColor() const override;
-            void SetPrimaryColor(const AZ::Color& color) override;
-            AZ::Color GetPrimaryColor() const override;
-            void SetSecondaryColor(const AZ::Color& color) override;
-            AZ::Color GetSecondaryColor() const override;
 
             //! AZ::TransformNotificationBus::Handler overrides ...
             void OnTransformChanged(const Transform& local, const Transform& world) override;

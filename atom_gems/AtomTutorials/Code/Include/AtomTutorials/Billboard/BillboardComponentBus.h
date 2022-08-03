@@ -24,36 +24,6 @@ namespace AZ
 
             //! Returns the dimensions of the grid in meters
             virtual float GetSize() const = 0;
-
-            //! Sets the distance between grid lines drawn in the primary grid color
-            virtual void SetPrimarySpacing(float spacing) = 0;
-
-            //! Returns the distance between grid lines drawn and the primary grid color
-            virtual float GetPrimarySpacing() const = 0;
-
-            //! Sets the distance between grid lines drawn in the secondary grid color
-            virtual void SetSecondarySpacing(float spacing) = 0;
-
-            //! Returns the distance between grid lines drawn in the secondary grid color
-            virtual float GetSecondarySpacing() const = 0;
-
-            //! Sets the color of the axis lines spanning the grid dimensions
-            virtual void SetAxisColor(const AZ::Color& color) = 0;
-
-            //! Returns the color of the axis lines spanning the grid dimensions
-            virtual AZ::Color GetAxisColor() const = 0;
-
-            //! Sets the color of primary grid lines
-            virtual void SetPrimaryColor(const AZ::Color& color) = 0;
-
-            //! Returns the color of primary grid lines
-            virtual AZ::Color GetPrimaryColor() const = 0;
-
-            //! Sets the color of secondary grid lines
-            virtual void SetSecondaryColor(const AZ::Color& color) = 0;
-
-            //! Returns the color of secondary grid lines
-            virtual AZ::Color GetSecondaryColor() const = 0;
         };
 
         using BillboardComponentRequestBus = EBus<BillboardComponentRequests>;
