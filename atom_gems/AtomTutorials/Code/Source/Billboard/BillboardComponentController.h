@@ -9,13 +9,15 @@
 #pragma once
 
 #include <Atom/RPI.Public/SceneBus.h>
-#include <Atom/RPI.Public/DynamicDraw/DynamicDrawContext.h>
 #include <AtomTutorials/Billboard/BillboardComponentBus.h>
 #include <AtomTutorials/Billboard/BillboardComponentConfig.h>
 #include <AzCore/Component/Component.h>
 #include <AzCore/Component/TransformBus.h>
 #include <AzFramework/Components/CameraBus.h>
-#include <Atom/Utils/AssetCollectionAsyncLoader.h>
+#include <Atom/Feature/Mesh/MeshFeatureProcessor.h>
+#include <Atom/RPI.Reflect/Asset/AssetUtils.h>
+#include <AzFramework/Render/GeometryIntersectionBus.h>
+#include <AzFramework/Visibility/BoundsBus.h>
 
 namespace AZ
 {
@@ -26,6 +28,8 @@ namespace AZ
             : public BillboardComponentRequestBus::Handler
             , public AZ::TransformNotificationBus::Handler
             , public AZ::RPI::SceneNotificationBus::Handler
+            , public AzFramework::BoundsRequestBus::Handler
+            , public AzFramework::RenderGeometry::IntersectionRequestBus::Handler
         {
         public:
             friend class EditorBillboardComponent;
@@ -40,7 +44,7 @@ namespace AZ
             BillboardComponentController() = default;
             BillboardComponentController(const BillboardComponentConfig& config);
 
-            void Activate(EntityId entityId);
+            void Activate(const AZ::EntityComponentIdPair& entityComponentIdPair);
             void Deactivate();
             void SetConfiguration(const BillboardComponentConfig& config);
             const BillboardComponentConfig& GetConfiguration() const;
@@ -84,16 +88,30 @@ namespace AZ
             // AZ::RPI::SceneNotificationBus::Handler overrides ...
             void OnBeginPrepareRender() override;
 
+            // BoundsRequestBus and MeshComponentRequestBus overrides ...
+            AZ::Aabb GetWorldBounds() override;
+            AZ::Aabb GetLocalBounds() override;
+
+            // IntersectionRequestBus overrides ...
+            AzFramework::RenderGeometry::RayResult RenderGeometryIntersect(const AzFramework::RenderGeometry::RayRequest& ray) override;
+
             void BuildGrid();
 
-            EntityId m_entityId;
             BillboardComponentConfig m_configuration;
             AZStd::vector<AZ::Vector3> m_axisGridPoints;
             bool m_dirty = true; // must be set to true for any configuration change that rebuilds the grid
-            AZ::RHI::Ptr<AZ::RPI::DynamicDrawContext> m_dynamicDraw;
 
-            //! Async asset load
-            AZ::AssetCollectionAsyncLoader m_assetLoadManager;
+            //! Cached bus to use to notify RenderGeometry::Intersector the entity/component has changed.
+            AzFramework::RenderGeometry::IntersectionNotificationBus::BusPtr m_intersectionNotificationBus;
+
+            AZ::Render::MeshFeatureProcessorInterface* m_meshFeatureProcessor;
+            TransformInterface* m_transformInterface = nullptr;
+
+            AZ::Data::Asset<AZ::RPI::ModelAsset> m_modelAsset;
+            AZ::Render::MeshFeatureProcessorInterface::MeshHandle m_meshHandle;
+            AZ::Data::Instance<AZ::RPI::Material> m_material;
+
+            AZ::EntityComponentIdPair m_entityComponentIdPair;
         };
     } // namespace Render
 } // namespace AZ
