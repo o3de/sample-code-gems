@@ -49,10 +49,6 @@ namespace AZ
                         "BillboardComponentConfig", "")
                         ->ClassElement(AZ::Edit::ClassElements::EditorData, "")
                             ->Attribute(AZ::Edit::Attributes::AutoExpand, true)
-                        ->DataElement(AZ::Edit::UIHandlers::Default, &BillboardComponentConfig::m_gridSize, "Grid Size", "Grid width and depth")
-                            ->Attribute(AZ::Edit::Attributes::Min, BillboardComponentController::MinGridSize)
-                            ->Attribute(AZ::Edit::Attributes::Max, BillboardComponentController::MaxGridSize)
-                            ->Attribute(AZ::Edit::Attributes::Suffix, " m")
                         ;
                 }
             }

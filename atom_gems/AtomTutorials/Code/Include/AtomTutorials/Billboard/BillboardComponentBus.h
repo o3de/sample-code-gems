@@ -19,11 +19,6 @@ namespace AZ
         class BillboardComponentRequests : public ComponentBus
         {
         public:
-            //! Sets the dimensions of the grid in meters
-            virtual void SetSize(float size) = 0;
-
-            //! Returns the dimensions of the grid in meters
-            virtual float GetSize() const = 0;
         };
 
         using BillboardComponentRequestBus = EBus<BillboardComponentRequests>;

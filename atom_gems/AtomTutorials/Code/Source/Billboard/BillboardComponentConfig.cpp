@@ -19,7 +19,6 @@ namespace AZ
             {
                 serializeContext->Class<BillboardComponentConfig, ComponentConfig>()
                     ->Version(0)
-                    ->Field("gridSize", &BillboardComponentConfig::m_gridSize)
                     ;
             }
         }

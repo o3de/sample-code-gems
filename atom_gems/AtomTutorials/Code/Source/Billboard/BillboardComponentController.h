@@ -52,10 +52,6 @@ namespace AZ
         private:
             AZ_DISABLE_COPY(BillboardComponentController);
 
-            //! BillboardComponentRequestBus overrides...
-            void SetSize(float size) override;
-            float GetSize() const override;
-
             //! AZ::TransformNotificationBus::Handler overrides ...
             void OnTransformChanged(const Transform& local, const Transform& world) override;
 

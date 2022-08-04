@@ -35,8 +35,6 @@ namespace AZ
             if (AZ::BehaviorContext* behaviorContext = azrtti_cast<AZ::BehaviorContext*>(context))
             {
                 behaviorContext->EBus<BillboardComponentRequestBus>("BillboardComponentRequestBus")
-                    ->Event("GetSize", &BillboardComponentRequestBus::Events::GetSize)
-                    ->VirtualProperty("Size", "GetSize", "SetSize")
                     ;
             }
         }
@@ -84,7 +82,7 @@ namespace AZ
             auto meshDescriptor = AZ::Render::MeshHandleDescriptor{ m_modelAsset };
 
             m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor, m_material);
-
+            
             m_meshFeatureProcessor->SetTransform(m_meshHandle, AZ::Transform::CreateIdentity());
         }
 
@@ -113,17 +111,6 @@ namespace AZ
         const BillboardComponentConfig& BillboardComponentController::GetConfiguration() const
         {
             return m_configuration;
-        }
-
-        void BillboardComponentController::SetSize(float size)
-        {
-            m_configuration.m_gridSize = AZStd::clamp(size, MinGridSize, MaxGridSize);
-            m_dirty = true;
-        }
-
-        float BillboardComponentController::GetSize() const
-        {
-            return m_configuration.m_gridSize;
         }
 
 
