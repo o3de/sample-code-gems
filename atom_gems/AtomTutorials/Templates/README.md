@@ -1,0 +1,1 @@
+The files in this folder serve as starting points for people who would like to code the features in this Gem by following the [O3DE rendering tutorials](https://www.o3de.org/docs/learning-guide/tutorials/rendering/).
