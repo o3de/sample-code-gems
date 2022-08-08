@@ -11,7 +11,7 @@
 #include <viewsrg.srgi>
 #include <scenesrg.srgi>
 
-struct VSInput
+struct VegetationVSInput
 {
     float3 m_position : POSITION;
     float3 m_normal : NORMAL;
@@ -24,7 +24,7 @@ struct VSDepthOutput
     precise float4 m_position : SV_Position;
 };
 
-VSDepthOutput DepthPassVS(VSInput IN)
+VSDepthOutput DepthPassVS(VegetationVSInput IN)
 {
     VSDepthOutput OUT;
  

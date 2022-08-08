@@ -24,7 +24,7 @@ struct VegetationVSInput
     float4 m_optional_color : COLOR0;
 };
 
-VSDepthOutput VegetationVS(VSInput IN)
+VSDepthOutput VegetationVS(VegetationVSInput IN)
 {
     VSDepthOutput OUT;
  
