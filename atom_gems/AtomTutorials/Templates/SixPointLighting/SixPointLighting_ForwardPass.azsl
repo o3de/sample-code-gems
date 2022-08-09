@@ -96,7 +96,6 @@ VSOutput SixPointLighting_ForwardPassVS(VSInput IN)
     TransformUvs(uvs, OUT.m_uv);
 
     VertexHelper(IN, OUT, worldPosition, false);
-    OUT.m_normal = mul(ObjectSrg::GetWorldMatrix(), float4(IN.m_normal, 1.0)).xyz;
 
     return OUT;
 }

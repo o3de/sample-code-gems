@@ -61,8 +61,44 @@ float3 GetSpecularLighting(Surface surface, LightingData lightingData, const flo
 
 // Then include everything else
 #include <Atom/Features/PBR/Lights/Lights.azsli>
-#include <Atom/Features/PBR/Lights/Ibl.azsli>
 
+#include <Atom/Features/Debug.azsli>
+
+#include <Atom/RPI/Math.azsli>
+#include <Atom/Features/PBR/Lights/LightTypesCommon.azsli>
+
+// Include IBL functions
+float3 GetIblDiffuse(Surface surface, float3 diffuseResponse)
+{
+    float3 irradianceDir = MultiplyVectorQuaternion(normal, SceneSrg::m_iblOrientation);
+    float3 diffuseSample = SceneSrg::m_diffuseEnvMap.Sample(SceneSrg::m_samplerEnv, GetCubemapCoords(irradianceDir)).rgb;
+
+    return diffuseResponse * albedo * diffuseSample;
+}
+
+void ApplyIBL(Surface surface, inout LightingData lightingData)
+{
+    bool useIbl = o_enableIBL && IsIndirectLightingEnabled();
+
+#ifdef FORCE_IBL_IN_FORWARD_PASS
+    bool useDiffuseIbl = true;
+#else
+    bool isTransparent = (o_opacity_mode == OpacityMode::Blended || o_opacity_mode == OpacityMode::TintedTransparent);
+    bool useDiffuseIbl = isTransparent;
+    useIbl = useIbl && useDiffuseIbl;
+#endif
+
+    if(useIbl)
+    {
+        float globalIblExposure = pow(2.0, SceneSrg::m_iblExposure);
+        
+        if(useDiffuseIbl)
+        {
+            float3 iblDiffuse = GetIblDiffuse(surface, lightingData.diffuseResponse);
+            lightingData.diffuseLighting += (iblDiffuse * globalIblExposure * lightingData.diffuseAmbientOcclusion);
+        }
+    }
+}
 
 struct PbrLightingOutput
 {
