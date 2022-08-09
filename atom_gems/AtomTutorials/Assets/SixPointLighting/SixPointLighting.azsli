@@ -62,11 +62,7 @@ float3 GetIblSample(Surface surface, float3 direction)
     return diffuseSample;
 }
 
-float3 GetIblDiffuse(
-    float3 normal, 
-    float3 albedo, 
-    float3 diffuseResponse,
-    Surface surface)
+float3 GetIblDiffuse(Surface surface, float3 diffuseResponse)
 {
     float3 rightSample = GetIblSample(surface, float3(1.0f, 0.0f, 0.0f));
     float3 leftSample = GetIblSample(surface, float3(-1.0f, 0.0f, 0.0f));
@@ -82,7 +78,7 @@ float3 GetIblDiffuse(
                                 + (frontsideSample * surface.frontside) 
                                 + (backsideSample * surface.backside);
 
-    return diffuseResponse * albedo * totalDiffuseSample;
+    return diffuseResponse * surface.albedo * totalDiffuseSample;
 }
 
 void ApplyIBL(Surface surface, inout LightingData lightingData)
@@ -103,7 +99,7 @@ void ApplyIBL(Surface surface, inout LightingData lightingData)
         
         if(useDiffuseIbl)
         {
-            float3 iblDiffuse = GetIblDiffuse(surface.normal, surface.albedo, lightingData.diffuseResponse, surface);
+            float3 iblDiffuse = GetIblDiffuse(surface, lightingData.diffuseResponse);
             lightingData.diffuseLighting += (iblDiffuse * globalIblExposure * lightingData.diffuseAmbientOcclusion);
         }
     }

@@ -70,10 +70,10 @@ float3 GetSpecularLighting(Surface surface, LightingData lightingData, const flo
 // Include IBL functions
 float3 GetIblDiffuse(Surface surface, float3 diffuseResponse)
 {
-    float3 irradianceDir = MultiplyVectorQuaternion(normal, SceneSrg::m_iblOrientation);
+    float3 irradianceDir = MultiplyVectorQuaternion(surface.normal, SceneSrg::m_iblOrientation);
     float3 diffuseSample = SceneSrg::m_diffuseEnvMap.Sample(SceneSrg::m_samplerEnv, GetCubemapCoords(irradianceDir)).rgb;
 
-    return diffuseResponse * albedo * diffuseSample;
+    return diffuseResponse * surface.albedo * diffuseSample;
 }
 
 void ApplyIBL(Surface surface, inout LightingData lightingData)
