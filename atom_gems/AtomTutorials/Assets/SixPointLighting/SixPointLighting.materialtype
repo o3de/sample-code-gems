@@ -1,0 +1,96 @@
+{
+    "description": "Material Type with six point lighting of a flipbook animation.",
+    "version": 1,
+    "propertyLayout": {
+        "propertyGroups": [
+            { 
+                "$import": "MaterialInputs/SixPointLightingPropertyGroup.json"
+            },
+            { 
+                "$import": "{your-path-to-o3de}/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/BaseColorPropertyGroup.json"
+            },
+            { 
+                "$import": "{your-path-to-o3de}/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/MetallicPropertyGroup.json"
+            },
+            { 
+                "$import": "{your-path-to-o3de}/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/RoughnessPropertyGroup.json"
+            },
+            { 
+                "$import": "{your-path-to-o3de}/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/SpecularPropertyGroup.json"
+            },
+            { 
+                "$import": "{your-path-to-o3de}/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/NormalPropertyGroup.json"
+            },
+            { 
+                "$import": "{your-path-to-o3de}/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/OcclusionPropertyGroup.json"
+            },
+            { 
+                "$import": "{your-path-to-o3de}/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/EmissivePropertyGroup.json"
+            },
+            { 
+                "$import": "{your-path-to-o3de}/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/ClearCoatPropertyGroup.json"
+            },
+            { 
+                "$import": "{your-path-to-o3de}/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/OpacityPropertyGroup.json"
+            },
+            { 
+                "$import": "{your-path-to-o3de}/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/UvPropertyGroup.json"
+            },
+            { 
+                "$import": "{your-path-to-o3de}/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/IrradiancePropertyGroup.json"
+            },
+            { 
+                "$import": "{your-path-to-o3de}/Gems/Atom/Feature/Common/Assets/Materials/Types/MaterialInputs/GeneralCommonPropertyGroup.json"
+            }
+        ]
+    },
+    "shaders": [
+        {
+            "file": "./SixPointLighting_ForwardPass.shader",
+            "tag": "ForwardPass_EDS"
+        },
+        {
+            "file": "./SixPointLighting_DepthPass_WithPS.shader",
+            "tag": "DepthPass_WithPS"
+        },
+        // Used by the light culling system to produce accurate depth bounds for this object when it uses blended transparency
+        {
+            "file": "./SixPointLighting_DepthPassTransparentMin_WithPS.shader",
+            "tag": "DepthPassTransparentMin_WithPS"
+        },
+        {
+            "file": "./SixPointLighting_DepthPassTransparentMax_WithPS.shader",
+            "tag": "DepthPassTransparentMax_WithPS"
+        }        
+    ],
+    "functors": [
+        {
+            "type": "Lua",
+            "args": {
+                "file": "SixPointLighting_TexturePackEnum.lua"
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
+                "file": "SixPointLighting_HandleOpacityDoubleSided.lua"
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
+                "file": "SixPointLighting_HandleOpacityMode.lua"
+            }
+        },
+        {
+            "type": "Lua",
+            "args": {
+                "file": "SixPointLighting_ShaderEnable.lua"
+            }
+        }
+    ],
+    "uvNameMap": {
+        "UV0": "Tiled",
+        "UV1": "Unwrapped"
+    }
+}
