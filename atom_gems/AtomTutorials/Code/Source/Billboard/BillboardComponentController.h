@@ -45,10 +45,6 @@ namespace AZ
             void SetConfiguration(const BillboardComponentConfig& config);
             const BillboardComponentConfig& GetConfiguration() const;
 
-            static constexpr float MinGridSize = 0.0f;
-            static constexpr float MaxGridSize = 1000000.0f;
-            static constexpr float MinSpacing = 0.01f;
-
         private:
             AZ_DISABLE_COPY(BillboardComponentController);
 
@@ -61,8 +57,6 @@ namespace AZ
             void BuildGrid();
 
             BillboardComponentConfig m_configuration;
-            AZStd::vector<AZ::Vector3> m_axisGridPoints;
-            bool m_dirty = true; // must be set to true for any configuration change that rebuilds the grid
 
             AZ::Render::MeshFeatureProcessorInterface* m_meshFeatureProcessor;
 

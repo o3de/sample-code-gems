@@ -27,8 +27,6 @@ namespace AZ
         class BillboardComponentNotifications : public ComponentBus
         {
         public:
-            //! Notify any handlers that the grid has been modified
-            virtual void OnGridChanged(){};
         };
 
         using BillboardComponentNotificationBus = EBus<BillboardComponentNotifications>;

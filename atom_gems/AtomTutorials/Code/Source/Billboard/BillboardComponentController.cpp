@@ -58,7 +58,6 @@ namespace AZ
         {
             const AZ::EntityId entityId = entityComponentIdPair.GetEntityId();
             m_entityComponentIdPair = entityComponentIdPair;
-            m_dirty = true;
 
             RPI::Scene* scene = RPI::Scene::GetSceneForEntityId(entityId);
             if (scene)
@@ -69,20 +68,14 @@ namespace AZ
             BillboardComponentRequestBus::Handler::BusConnect(entityId);
             AZ::TransformNotificationBus::Handler::BusConnect(entityId);
 
-            AzFramework::EntityContextId contextId = AzFramework::EntityContextId::CreateNull();
-            AzFramework::EntityIdContextQueryBus::EventResult(
-                contextId, entityId, &AzFramework::EntityIdContextQueries::GetOwningContextId);
-
             m_meshFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<Render::MeshFeatureProcessorInterface>(entityId);
             AZ_Assert(m_meshFeatureProcessor, "MeshFeatureProcessor not available.");
 
             AZ::Data::Asset<AZ::RPI::MaterialAsset> materialAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>("assets/explosion.azmaterial", AZ::RPI::AssetUtils::TraceLevel::Error);
             m_material = AZ::RPI::Material::FindOrCreate(materialAsset);
             m_modelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>("materialeditor/viewportmodels/plane_1x1.azmodel", AZ::RPI::AssetUtils::TraceLevel::Assert);
-            auto meshDescriptor = AZ::Render::MeshHandleDescriptor{ m_modelAsset };
+            m_meshHandle = m_meshFeatureProcessor->AcquireMesh(AZ::Render::MeshHandleDescriptor{ m_modelAsset }, m_material);
 
-            m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor, m_material);
-            
             m_meshFeatureProcessor->SetTransform(m_meshHandle, AZ::Transform::CreateIdentity());
         }
 
@@ -105,7 +98,6 @@ namespace AZ
         void BillboardComponentController::SetConfiguration(const BillboardComponentConfig& config)
         {
             m_configuration = config;
-            m_dirty = true;
         }
 
         const BillboardComponentConfig& BillboardComponentController::GetConfiguration() const
@@ -116,107 +108,35 @@ namespace AZ
 
         void BillboardComponentController::OnBeginPrepareRender()
         {
-            if (m_configuration.m_gridSize <= 0.0f)
-            {
-                return;
-            }
-
             m_meshFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<Render::MeshFeatureProcessorInterface>(m_entityComponentIdPair.GetEntityId());
             if (!m_meshFeatureProcessor) {
                 return;
             }
 
-            auto* auxGeomFP = AZ::RPI::Scene::GetFeatureProcessorForEntity<AZ::RPI::AuxGeomFeatureProcessorInterface>(m_entityComponentIdPair.GetEntityId());
-            if (!auxGeomFP)
-            {
-                return;
-            }
-
-            if (auto auxGeom = auxGeomFP->GetDrawQueue())
-            {
-                BuildGrid();
-
-                /*
-                AZ::RPI::AuxGeomDraw::AuxGeomDynamicDrawArguments drawArgs;
-                drawArgs.m_verts = m_axisGridPoints.data();
-                drawArgs.m_vertCount = aznumeric_cast<uint32_t>(m_axisGridPoints.size());
-                drawArgs.m_colors = &m_configuration.m_axisColor;
-                auxGeom->DrawLines(drawArgs);*/
-            }
+            BuildGrid();
         }
 
         void BillboardComponentController::OnTransformChanged(const Transform& local, const Transform& world)
         {
             AZ_UNUSED(local);
             AZ_UNUSED(world);
-            m_dirty = true;
-
-            if (m_meshFeatureProcessor)
-            {
-                /*AZ::Transform transf = world;
-                transf.SetTranslation(AZ::Vector3(world.GetTranslation().GetX() + 1, world.GetTranslation().GetY() + 1, world.GetTranslation().GetZ() + 1));
-                m_meshFeatureProcessor->SetTransform(m_meshHandle, transf);
-                AzFramework::RenderGeometry::IntersectionNotificationBus::Event(
-                    m_intersectionNotificationBus, &AzFramework::RenderGeometry::IntersectionNotificationBus::Events::OnGeometryChanged,
-                    m_entityComponentIdPair.GetEntityId());*/
-            }
+            
+            BuildGrid();
         }
 
         void BillboardComponentController::BuildGrid()
         {
             EntityId cam;
             Camera::CameraSystemRequestBus::BroadcastResult(cam, &Camera::CameraSystemRequests::GetActiveCamera);
-
             AZ::Vector3 cameraWorldPosition;
             AZ::TransformBus::EventResult(cameraWorldPosition, cam, &AZ::TransformBus::Events::GetWorldTranslation);
 
-
-            
             AZ::Vector3 myPosition;
             AZ::TransformBus::EventResult(myPosition, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
 
-            AZ::Transform myTransform;
-            AZ::TransformBus::EventResult(myTransform, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-            /*
-            const float halfLength = m_configuration.m_gridSize / 2.0f;
-
-            // From camera POV, the forward axis is Z positive, even though O3DE's default is Y positive for forward axis.
-            AZ::Transform tf = AZ::Transform::CreateLookAt(cameraWorldPosition, myPosition, AZ::Transform::Axis::ZPositive);
-            AZ::Matrix3x4 viewMatrix = AZ::Matrix3x4::CreateFromTransform(tf);*/
-
-            //AZ::Transform curT = m_meshFeatureProcessor->GetTransform(m_meshHandle);
-            //AZ::Transform transf = AZ::Transform::CreateLookAt(cameraWorldPosition, myPosition, AZ::Transform::Axis::ZPositive);
+            // From mesh POV, the forward axis is Z positive, even though O3DE's default is Y positive for forward axis.
             AZ::Transform tf = AZ::Transform::CreateLookAt(myPosition, cameraWorldPosition, AZ::Transform::Axis::ZPositive);
             m_meshFeatureProcessor->SetTransform(m_meshHandle, tf);
-
-            /*
-            AZ::Vector3 cameraRight = AZ::Vector3(viewMatrix(0, 0), viewMatrix(1, 0), viewMatrix(2, 0));
-            AZ::Vector3 cameraUp = AZ::Vector3(viewMatrix(0, 1), viewMatrix(1, 1), viewMatrix(2, 1));
-
-            AZ::Vector3 p0_world = myPosition + cameraRight * halfLength + cameraUp * halfLength; // top right
-            AZ::Vector3 p1_world = myPosition + cameraRight * halfLength - cameraUp * halfLength; // bottom right
-            AZ::Vector3 p2_world = myPosition - cameraRight * halfLength - cameraUp * halfLength; // bottom left
-            AZ::Vector3 p3_world = myPosition - cameraRight * halfLength + cameraUp * halfLength; // top left*/
-
-            /*
-            // Make lines
-            m_axisGridPoints.clear();
-            m_axisGridPoints.reserve(8);
-            // Right
-            m_axisGridPoints.push_back(p0_world);
-            m_axisGridPoints.push_back(p1_world);
-            // Bottom
-            m_axisGridPoints.push_back(p1_world);
-            m_axisGridPoints.push_back(p2_world);
-            // Left
-            m_axisGridPoints.push_back(p2_world);
-            m_axisGridPoints.push_back(p3_world);
-            // Top
-            m_axisGridPoints.push_back(p3_world);
-            m_axisGridPoints.push_back(p0_world);*/
-            
-
-            BillboardComponentNotificationBus::Event(m_entityComponentIdPair.GetEntityId(), &BillboardComponentNotificationBus::Events::OnGridChanged);
         }
     } // namespace Render
 } // namespace AZ
