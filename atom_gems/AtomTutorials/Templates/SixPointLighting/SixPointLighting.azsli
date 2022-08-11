@@ -37,26 +37,7 @@ float3 GetDiffuseLighting(Surface surface, LightingData lightingData, float3 lig
 
 float3 GetSpecularLighting(Surface surface, LightingData lightingData, const float3 lightIntensity, const float3 dirToLight)
 {
-    float3 specular = SpecularGGX(lightingData.dirToCamera, dirToLight, surface.normal, surface.specularF0, lightingData.NdotV, surface.roughnessA2, lightingData.multiScatterCompensation);
-
-    if(o_clearCoat_feature_enabled)
-    {
-        float3 halfVector = normalize(dirToLight + lightingData.dirToCamera);
-        float NdotH = saturate(dot(surface.clearCoat.normal, halfVector));
-        float NdotL = saturate(dot(surface.clearCoat.normal, dirToLight));
-        float HdotL = saturate(dot(halfVector, dirToLight));
-
-        // HdotV = HdotL due to the definition of half vector
-        float3 clearCoatF = FresnelSchlick(HdotL, 0.04) * surface.clearCoat.factor;
-        float clearCoatRoughness = max(surface.clearCoat.roughness * surface.clearCoat.roughness, 0.0005f);
-        float3 clearCoatSpecular = ClearCoatGGX(NdotH, HdotL, NdotL, surface.clearCoat.normal, clearCoatRoughness, clearCoatF);
-
-        specular = specular * (1.0 - clearCoatF) + clearCoatSpecular;
-    }
-    
-    specular *= lightIntensity;
-    
-    return specular;
+    return float3(0.0f, 0.0f, 0.0f);
 }
 
 // Then include everything else
