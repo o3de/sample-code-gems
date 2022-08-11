@@ -62,35 +62,13 @@ namespace AZ
             {
                 AZ::RPI::SceneNotificationBus::Handler::BusConnect(scene->GetId());
             }
-
-            BillboardComponentRequestBus::Handler::BusConnect(entityId);
-            AZ::TransformNotificationBus::Handler::BusConnect(entityId);
-
-            m_meshFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<Render::MeshFeatureProcessorInterface>(entityId);
-            AZ_Assert(m_meshFeatureProcessor, "MeshFeatureProcessor not available.");
-
-            AZ::Data::Asset<AZ::RPI::MaterialAsset> materialAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>("materials/presets/pbr/metal_gold.azmaterial", AZ::RPI::AssetUtils::TraceLevel::Error);
-            m_material = AZ::RPI::Material::FindOrCreate(materialAsset);
-            m_modelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>("materialeditor/viewportmodels/plane_1x1.azmodel", AZ::RPI::AssetUtils::TraceLevel::Assert);
-            m_meshHandle = m_meshFeatureProcessor->AcquireMesh(AZ::Render::MeshHandleDescriptor{ m_modelAsset }, m_material);
-
-            m_meshFeatureProcessor->SetTransform(m_meshHandle, AZ::Transform::CreateIdentity());
         }
 
         void BillboardComponentController::Deactivate()
         {
-            if (m_meshFeatureProcessor && m_meshHandle.IsValid())
-            {
-                m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
-            }
-
-            AZ::TransformNotificationBus::Handler::BusDisconnect();
-            BillboardComponentRequestBus::Handler::BusDisconnect();
             AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
 
-            m_meshFeatureProcessor = nullptr;
             m_entityComponentIdPair = AZ::EntityComponentIdPair(AZ::EntityId(), AZ::InvalidComponentId);
-            m_modelAsset.Release();
         }
 
         void BillboardComponentController::SetConfiguration(const BillboardComponentConfig& config)
@@ -124,17 +102,7 @@ namespace AZ
 
         void BillboardComponentController::SetBillboardTransform()
         {
-            EntityId cameraId;
-            Camera::CameraSystemRequestBus::BroadcastResult(cameraId, &Camera::CameraSystemRequests::GetActiveCamera);
-            AZ::Vector3 cameraWorldPosition;
-            AZ::TransformBus::EventResult(cameraWorldPosition, cameraId, &AZ::TransformBus::Events::GetWorldTranslation);
-
-            AZ::Vector3 entityWorldPosition;
-            AZ::TransformBus::EventResult(entityWorldPosition, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
-
-            // From mesh POV, the forward axis is Z positive, even though O3DE's default is Y positive for forward axis.
-            AZ::Transform tf = AZ::Transform::CreateLookAt(entityWorldPosition, cameraWorldPosition, AZ::Transform::Axis::ZPositive);
-            m_meshFeatureProcessor->SetTransform(m_meshHandle, tf);
+            
         }
     } // namespace Render
 } // namespace AZ
