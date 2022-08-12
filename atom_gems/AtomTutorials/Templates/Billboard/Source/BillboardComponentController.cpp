@@ -57,16 +57,12 @@ namespace AZ
             const AZ::EntityId entityId = entityComponentIdPair.GetEntityId();
             m_entityComponentIdPair = entityComponentIdPair;
 
-            RPI::Scene* scene = RPI::Scene::GetSceneForEntityId(entityId);
-            if (scene)
-            {
-                AZ::RPI::SceneNotificationBus::Handler::BusConnect(scene->GetId());
-            }
+            BillboardComponentRequestBus::Handler::BusConnect(entityId);
         }
 
         void BillboardComponentController::Deactivate()
         {
-            AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
+            BillboardComponentRequestBus::Handler::BusDisconnect();
 
             m_entityComponentIdPair = AZ::EntityComponentIdPair(AZ::EntityId(), AZ::InvalidComponentId);
         }
@@ -84,20 +80,12 @@ namespace AZ
 
         void BillboardComponentController::OnBeginPrepareRender()
         {
-            m_meshFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<Render::MeshFeatureProcessorInterface>(m_entityComponentIdPair.GetEntityId());
-            if (!m_meshFeatureProcessor) {
-                return;
-            }
-
-            SetBillboardTransform();
         }
 
         void BillboardComponentController::OnTransformChanged(const Transform& local, const Transform& world)
         {
             AZ_UNUSED(local);
             AZ_UNUSED(world);
-            
-            SetBillboardTransform();
         }
 
         void BillboardComponentController::SetBillboardTransform()
