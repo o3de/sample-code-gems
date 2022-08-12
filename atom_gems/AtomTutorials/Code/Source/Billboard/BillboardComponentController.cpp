@@ -124,6 +124,7 @@ namespace AZ
             AZ::Vector3 entityWorldPosition;
             AZ::TransformBus::EventResult(entityWorldPosition, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
 
+            // From mesh POV, the forward axis is Z positive, even though O3DE's default is Y positive for forward axis
             AZ::Transform transform = AZ::Transform::CreateLookAt(entityWorldPosition, cameraWorldPosition, AZ::Transform::Axis::ZPositive);
             m_meshFeatureProcessor->SetTransform(m_meshHandle, transform);
 
