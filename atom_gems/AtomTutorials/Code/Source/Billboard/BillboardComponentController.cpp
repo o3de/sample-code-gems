@@ -57,15 +57,13 @@ namespace AZ
             const AZ::EntityId entityId = entityComponentIdPair.GetEntityId();
             m_entityComponentIdPair = entityComponentIdPair;
 
-            BillboardComponentRequestBus::Handler::BusConnect(entityId);
-
             RPI::Scene* scene = RPI::Scene::GetSceneForEntityId(entityId);
             if (scene)
             {
                 AZ::RPI::SceneNotificationBus::Handler::BusConnect(scene->GetId());
             }
 
-            AZ::TransformNotificationBus::Handler::BusConnect(entityId);
+            BillboardComponentRequestBus::Handler::BusConnect(entityId);
 
             m_meshFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<Render::MeshFeatureProcessorInterface>(entityId);
             AZ_Assert(m_meshFeatureProcessor, "MeshFeatureProcessor not available.");
@@ -73,25 +71,22 @@ namespace AZ
             AZ::Data::Asset<AZ::RPI::MaterialAsset> materialAsset = AZ::RPI::AssetUtils::LoadAssetByProductPath<AZ::RPI::MaterialAsset>("materials/presets/pbr/metal_gold.azmaterial", AZ::RPI::AssetUtils::TraceLevel::Error);
             m_material = AZ::RPI::Material::FindOrCreate(materialAsset);
             m_modelAsset = AZ::RPI::AssetUtils::GetAssetByProductPath<AZ::RPI::ModelAsset>("materialeditor/viewportmodels/plane_1x1.azmodel", AZ::RPI::AssetUtils::TraceLevel::Assert);
-            m_meshHandle = m_meshFeatureProcessor->AcquireMesh(AZ::Render::MeshHandleDescriptor{ m_modelAsset }, m_material);
+            
+            auto meshDescriptor = AZ::Render::MeshHandleDescriptor{ m_modelAsset };
+            m_meshHandle = m_meshFeatureProcessor->AcquireMesh(meshDescriptor, m_material);
 
-            AZ::Transform entityTransform;
-            AZ::TransformBus::EventResult(entityTransform, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTM);
-
-            m_meshFeatureProcessor->SetTransform(m_meshHandle, entityTransform);
+            m_meshFeatureProcessor->SetTransform(m_meshHandle, AZ::Transform::CreateIdentity());
         }
 
         void BillboardComponentController::Deactivate()
         {
-            AZ::TransformNotificationBus::Handler::BusDisconnect();
-            AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
             BillboardComponentRequestBus::Handler::BusDisconnect();
+            AZ::RPI::SceneNotificationBus::Handler::BusDisconnect();
 
             if (m_meshFeatureProcessor && m_meshHandle.IsValid())
             {
                 m_meshFeatureProcessor->ReleaseMesh(m_meshHandle);
             }
-
             m_meshFeatureProcessor = nullptr;
             m_modelAsset.Release();
 
@@ -114,14 +109,6 @@ namespace AZ
             SetBillboardTransform();
         }
 
-        void BillboardComponentController::OnTransformChanged(const Transform& local, const Transform& world)
-        {
-            AZ_UNUSED(local);
-            AZ_UNUSED(world);
-            
-            SetBillboardTransform();
-        }
-
         void BillboardComponentController::SetBillboardTransform()
         {
             m_meshFeatureProcessor = RPI::Scene::GetFeatureProcessorForEntity<Render::MeshFeatureProcessorInterface>(m_entityComponentIdPair.GetEntityId());
@@ -129,17 +116,18 @@ namespace AZ
                 return;
             }
 
-            AZ::Vector3 entityWorldPosition;
-            AZ::TransformBus::EventResult(entityWorldPosition, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
-
             EntityId cameraId;
             Camera::CameraSystemRequestBus::BroadcastResult(cameraId, &Camera::CameraSystemRequests::GetActiveCamera);
             AZ::Vector3 cameraWorldPosition;
             AZ::TransformBus::EventResult(cameraWorldPosition, cameraId, &AZ::TransformBus::Events::GetWorldTranslation);
 
-            // From mesh POV, the forward axis is Z positive, even though O3DE's default is Y positive for forward axis.
+            AZ::Vector3 entityWorldPosition;
+            AZ::TransformBus::EventResult(entityWorldPosition, m_entityComponentIdPair.GetEntityId(), &AZ::TransformBus::Events::GetWorldTranslation);
+
             AZ::Transform transform = AZ::Transform::CreateLookAt(entityWorldPosition, cameraWorldPosition, AZ::Transform::Axis::ZPositive);
             m_meshFeatureProcessor->SetTransform(m_meshHandle, transform);
+
+            BillboardComponentNotificationBus::Event(m_entityComponentIdPair.GetEntityId(), &BillboardComponentNotificationBus::Events::OnBillboardTransformed);
         }
     } // namespace Render
 } // namespace AZ

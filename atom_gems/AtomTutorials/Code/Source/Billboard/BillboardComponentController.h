@@ -24,7 +24,6 @@ namespace AZ
         //! Controls behavior and rendering of a wireframe Billboard
         class BillboardComponentController final
             : public BillboardComponentRequestBus::Handler
-            , public AZ::TransformNotificationBus::Handler
             , public AZ::RPI::SceneNotificationBus::Handler
         {
         public:
@@ -47,9 +46,6 @@ namespace AZ
 
         private:
             AZ_DISABLE_COPY(BillboardComponentController);
-
-            //! AZ::TransformNotificationBus::Handler overrides ...
-            void OnTransformChanged(const Transform& local, const Transform& world) override;
 
             // AZ::RPI::SceneNotificationBus::Handler overrides ...
             void OnBeginPrepareRender() override;

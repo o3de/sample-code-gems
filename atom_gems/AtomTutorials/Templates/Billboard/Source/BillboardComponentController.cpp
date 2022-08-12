@@ -80,12 +80,7 @@ namespace AZ
 
         void BillboardComponentController::OnBeginPrepareRender()
         {
-        }
 
-        void BillboardComponentController::OnTransformChanged(const Transform& local, const Transform& world)
-        {
-            AZ_UNUSED(local);
-            AZ_UNUSED(world);
         }
 
         void BillboardComponentController::SetBillboardTransform()

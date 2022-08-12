@@ -15,7 +15,7 @@ namespace AZ
 {
     namespace Render
     {
-        //! BillboardComponentRequestBus declares an interface for configuring and interacting with the billboard component
+        //! Billboard ComponentRequestBus declares an interface for configuring and interacting with the billboard component
         class BillboardComponentRequests : public ComponentBus
         {
         public:
@@ -23,9 +23,12 @@ namespace AZ
 
         using BillboardComponentRequestBus = EBus<BillboardComponentRequests>;
 
+        //! BillboardComponentNotificationBus notifications are triggered whenever the billboard changes
         class BillboardComponentNotifications : public ComponentBus
         {
         public:
+            //! Notify any handlers that the billboard has been modified
+            virtual void OnBillboardTransformed(){};
         };
 
         using BillboardComponentNotificationBus = EBus<BillboardComponentNotifications>;
