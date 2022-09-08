@@ -25,6 +25,12 @@ class PyShapeExampleDialog(QDialog):
         self.add_shape_name_suffix.setEnabled(len(text))
 
     def create_entity_with_shape_component(self, type_id):
+        # Make sure a level is open
+        is_level_loaded = editor.EditorRequestBus(bus.Broadcast, 'IsLevelDocumentOpen')
+        if not is_level_loaded:
+            print("Make sure a level is loaded before choosing your shape")
+            return
+
         # Create a new entity
         new_entity_id = editor.ToolsApplicationRequestBus(bus.Broadcast, 'CreateNewEntity', entity.EntityId())
 
@@ -66,7 +72,7 @@ class PyShapeExampleDialog(QDialog):
         main_layout.addWidget(intro_text)
 
         # Show link to the actual tutorial for this example
-        tutorial_link = QLabel('You can learn how to build this example on <a href="https://o3de.org/docs/learning-guide/tutorials/custom-tools/shape-example-py/">O3DE Learn.</a>', self)
+        tutorial_link = QLabel('You can learn how to build this example on <a href="https://www.o3de.org/docs/learning-guide/tutorials/extend-the-editor/shape-example-py/">O3DE Learn.</a>', self)
         tutorial_link.setTextFormat(Qt.RichText)
         tutorial_link.setOpenExternalLinks(True)
         main_layout.addWidget(tutorial_link)
