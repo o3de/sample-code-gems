@@ -24,7 +24,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 
-#include <ShapeExampleWidget.h>
+#include "ShapeExampleWidget.h"
 
 namespace ShapeExample
 {
@@ -42,7 +42,7 @@ namespace ShapeExample
         mainLayout->addWidget(introText);
 
         // Show link to the actual tutorial for this example
-        QLabel* tutorialLink = new QLabel(QObject::tr("You can learn how to build this example on <a href=\"https://o3de.org/docs/learning-guide/tutorials/custom-tools/shape-example-cpp/\">O3DE Learn.</a>"), this);
+        QLabel* tutorialLink = new QLabel(QObject::tr("You can learn how to build this example on <a href=\"https://www.o3de.org/docs/learning-guide/tutorials/extend-the-editor/shape-example-cpp/\">O3DE Learn.</a>"), this);
         tutorialLink->setTextFormat(Qt::RichText);
         tutorialLink->setOpenExternalLinks(true);
         mainLayout->addWidget(tutorialLink);
@@ -154,6 +154,15 @@ namespace ShapeExample
     void ShapeExampleWidget::CreateEntityWithShapeComponent(const AZ::TypeId& typeId)
     {
         using namespace AzToolsFramework;
+
+        // Make sure a level is open
+        bool isLevelLoaded = false;
+        EditorRequestBus::BroadcastResult(isLevelLoaded, &EditorRequests::IsLevelDocumentOpen);
+        if (!isLevelLoaded)
+        {
+            AZ_Warning("ShapeExample", false, "Make sure a level is loaded before choosing your shape");
+            return;
+        }
 
         // Create a new entity
         AZ::EntityId newEntityId;
