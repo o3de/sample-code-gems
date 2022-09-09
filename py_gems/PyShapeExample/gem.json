@@ -1,8 +1,12 @@
 {
     "gem_name": "PyShapeExample",
     "display_name": "PyShapeExample",
-    "license": "What license PyShapeExample uses goes here: i.e. https://opensource.org/licenses/MIT",
-    "origin": "The primary repo for PyShapeExample goes here: i.e. http://www.mydomain.com",
+    "license": "MIT",
+    "license_url": "https://opensource.org/licenses/MIT",
+    "origin": "Open 3D Engine - o3de.org",
+    "origin_url": "https://github.com/o3de/sample-code-gems",
+    "repo_uri": "https://raw.githubusercontent.com/o3de/sample-code-gems/main/py_gems/PyShapeExample",
+    "last_updated": "2022-09-09",
     "type": "Code",
     "summary": "Day 1 example of a custom tool in Python that can create shapes in the Editor.",
     "canonical_tags": [
@@ -13,6 +17,7 @@
     ],
     "icon_path": "preview.png",
     "requirements": "",
+    "documentation_url": "https://www.o3de.org/docs/learning-guide/tutorials/extend-the-editor/shape-example-py",
     "restricted_name": "PyShapeExample",
     "dependencies": [
         "QtForPython"

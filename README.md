@@ -4,6 +4,7 @@ This repository holds various examples of how to extend the O3DE engine. Some ex
 
 The examples are spread across several categories, such as:
 * Creating custom tools for extending the Editor (C++ and Python)
+* Atom rendering (Custom Lighting, Vegetation Bending)
 
 ## License
 
