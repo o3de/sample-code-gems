@@ -1,0 +1,13 @@
+{
+    "repo_name": "Extending O3DE - Sample Code Gems",
+    "origin": "sample-code-gems",
+    "repo_uri": "https://raw.githubusercontent.com/o3de/sample-code-gems/main",
+    "summary": "A gem repository which holds various example gems of how to extend the O3DE engine.",
+    "additional_info": "See the README.md at the root of this repository for more information",
+    "last_updated": "2022-09-09",
+    "gems": [
+        "https://raw.githubusercontent.com/o3de/sample-code-gems/main/atom_gems/AtomTutorials",
+        "https://raw.githubusercontent.com/o3de/sample-code-gems/main/cpp_gems/ShapeExample",
+        "https://raw.githubusercontent.com/o3de/sample-code-gems/main/py_gems/PyShapeExample"
+    ]
+}
