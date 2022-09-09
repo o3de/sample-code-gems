@@ -6,6 +6,12 @@ The examples are spread across several categories, such as:
 * Creating custom tools for extending the Editor (C++ and Python)
 * Atom rendering (Custom Lighting, Vegetation Bending)
 
+## To add this remote repository in Project Manager use the URL
+
+```
+https://raw.githubusercontent.com/o3de/sample-code-gems/main
+```
+
 ## License
 
 For terms please see the LICENSE*.TXT files at the root of this distribution.
